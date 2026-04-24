@@ -34,7 +34,7 @@ function Navigation() {
                 <NavLink to="/home" end className="block">{({ isActive }) => <NavItem icon={Home} label="Home" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
                 <NavLink to="/my-learning" className="block">{({ isActive }) => <NavItem icon={BookOpen} label="My Learning" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
                 <NavLink to="/courses" className="block">{({ isActive }) => <NavItem icon={Users} label="Courses" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
-                <NavLink to="/certificate" className="block">{({ isActive }) => <NavItem icon={GraduationCap} label="Certificate" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
+                <NavLink to="/certificates" className="block">{({ isActive }) => <NavItem icon={GraduationCap} label="Certificate" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
                 <NavLink to="/wishlist" className="block">{({ isActive }) => <NavItem icon={Heart} label="Wishlist" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
                 <NavLink to="/cart" className="block">{({ isActive }) => <NavItem icon={ShoppingCart} label="My Cart" active={isActive} isCollapsed={isCollapsed} />}</NavLink>
                 <NavLink to="/settings" className="block">{({ isActive }) => <NavItem icon={Settings} label="Settings" active={isActive} isCollapsed={isCollapsed} />}</NavLink>

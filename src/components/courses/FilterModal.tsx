@@ -1,235 +1,257 @@
-import { X, Star, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react"
+import { X, Star } from "lucide-react"
 
-interface FilterModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onApply?: (filters: Record<string, any>) => void;
+export interface FilterState {
+  topics: string[]
+  levels: string[]
+  price: "All" | "Free" | "Paid"
+  minRating: number | null
+  duration: string | null
 }
 
-const TOPICS = ['Cyber Security', 'Development', 'Design', 'Data Science', 'Cloud', 'Business', 'Marketing'];
-const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const DURATIONS = ['0-2 Hours', '3-6 Hours', '7-12 Hours', '13+ Hours'];
+const TOPICS = [
+  "Cyber Security", "Front-end Development", "Back-end Development",
+  "Data Science", "Cloud Computing", "Design", "Business", "Marketing",
+]
+const LEVELS = ["Beginner", "Intermediate", "Advanced"]
+const DURATIONS = [
+  { key: "0-2 Hours", label: "0–2 hours" },
+  { key: "3-6 Hours", label: "3–6 hours" },
+  { key: "7-12 Hours", label: "7–12 hours" },
+  { key: "13+ Hours", label: "13+ hours" },
+]
+const RATINGS = [4.5, 4.0, 3.5, 3.0]
 
-export default function FilterModal({ isOpen, onClose, onApply }: FilterModalProps) {
-    const [selectedTopics, setSelectedTopics] = useState<string[]>(['Cyber Security']);
-    const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-    const [selectedPrice, setSelectedPrice] = useState<'All' | 'Paid' | 'Free'>('All');
-    const [selectedRating, setSelectedRating] = useState<number | null>(null);
-    const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
+interface Props {
+  mode: "sidebar" | "modal"
+  isOpen?: boolean
+  onClose?: () => void
+  initial?: Partial<FilterState>
+  onApply: (filters: FilterState) => void
+}
 
-    // Prevent scrolling when modal is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
+export default function FilterModal({ mode, isOpen = false, onClose, initial, onApply }: Props) {
+  const [topics, setTopics] = useState<string[]>(initial?.topics || [])
+  const [levels, setLevels] = useState<string[]>(initial?.levels || [])
+  const [price, setPrice] = useState<FilterState["price"]>(initial?.price || "All")
+  const [minRating, setMinRating] = useState<number | null>(initial?.minRating ?? null)
+  const [duration, setDuration] = useState<string | null>(initial?.duration ?? null)
 
-    if (!isOpen) return null;
+  // In sidebar mode we apply immediately on each change for a snappier feel.
+  // In modal mode the user confirms with the Apply button.
+  const liveApply = mode === "sidebar"
 
-    const toggleSelection = (list: string[], setList: (val: string[]) => void, item: string) => {
-        if (list.includes(item)) {
-            setList(list.filter(i => i !== item));
-        } else {
-            setList([...list, item]);
-        }
-    };
+  useEffect(() => {
+    if (!liveApply) return
+    onApply({ topics, levels, price, minRating, duration })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topics, levels, price, minRating, duration])
 
-    const clearAll = () => {
-        setSelectedTopics([]);
-        setSelectedLevels([]);
-        setSelectedPrice('All');
-        setSelectedRating(null);
-        setSelectedDuration(null);
-    };
+  useEffect(() => {
+    if (mode !== "modal") return
+    document.body.style.overflow = isOpen ? "hidden" : "unset"
+    return () => { document.body.style.overflow = "unset" }
+  }, [isOpen, mode])
 
-    const handleApply = () => {
-        onApply?.({
-            topic: selectedTopics[0],
-            level: selectedLevels[0],
-            price: selectedPrice !== 'All' ? selectedPrice : undefined,
-            minRating: selectedRating,
-        });
-        onClose();
-    };
+  // Sync local state when initial changes (e.g. Clear All from page toolbar)
+  useEffect(() => {
+    setTopics(initial?.topics || [])
+    setLevels(initial?.levels || [])
+    setPrice(initial?.price || "All")
+    setMinRating(initial?.minRating ?? null)
+    setDuration(initial?.duration ?? null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(initial)])
 
-    return (
-        <div className="fixed inset-0 z-[60] flex justify-end">
-            {/* Overlay */}
-            <div
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300"
-                onClick={onClose}
-            />
+  const toggle = (list: string[], setter: (v: string[]) => void, item: string) => {
+    setter(list.includes(item) ? list.filter((i) => i !== item) : [...list, item])
+  }
 
-            {/* Modal Content */}
-            <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                    <h2 className="text-xl font-bold text-slate-800">Filter</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600"
-                    >
-                        <X size={24} />
-                    </button>
-                </div>
+  const resetAll = () => {
+    setTopics([]); setLevels([]); setPrice("All"); setMinRating(null); setDuration(null)
+  }
 
-                {/* Scrollable Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-                    {/* Topic Section */}
-                    <Section title="Topic">
-                        <div className="flex flex-wrap gap-2">
-                            {TOPICS.map(topic => (
-                                <Chip
-                                    key={topic}
-                                    label={topic}
-                                    isSelected={selectedTopics.includes(topic)}
-                                    onClick={() => toggleSelection(selectedTopics, setSelectedTopics, topic)}
-                                />
-                            ))}
-                        </div>
-                    </Section>
+  const confirm = () => {
+    onApply({ topics, levels, price, minRating, duration })
+    onClose?.()
+  }
 
-                    {/* Price Section */}
-                    <Section title="Price">
-                        <div className="grid grid-cols-3 gap-3">
-                            {(['All', 'Paid', 'Free'] as const).map(price => (
-                                <button
-                                    key={price}
-                                    onClick={() => setSelectedPrice(price)}
-                                    className={`py-2.5 px-4 rounded-xl text-sm font-bold border transition-all ${selectedPrice === price
-                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                                        : 'bg-white border-gray-200 text-gray-500 hover:border-indigo-200'
-                                        }`}
-                                >
-                                    {price}
-                                </button>
-                            ))}
-                        </div>
-                    </Section>
+  const countActive =
+    topics.length + levels.length +
+    (price !== "All" ? 1 : 0) + (minRating ? 1 : 0) + (duration ? 1 : 0)
 
-                    {/* Course Level Section */}
-                    <Section title="Course Level">
-                        <div className="space-y-2">
-                            {LEVELS.map(level => (
-                                <label key={level} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer group transition-colors">
-                                    <span className="text-sm font-semibold text-gray-600 group-hover:text-slate-800">{level}</span>
-                                    <div className="relative flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only"
-                                            checked={selectedLevels.includes(level)}
-                                            onChange={() => toggleSelection(selectedLevels, setSelectedLevels, level)}
-                                        />
-                                        <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${selectedLevels.includes(level)
-                                            ? 'bg-indigo-600 border-indigo-600'
-                                            : 'bg-white border-gray-300'
-                                            }`}>
-                                            {selectedLevels.includes(level) && <Check size={14} className="text-white" />}
-                                        </div>
-                                    </div>
-                                </label>
-                            ))}
-                        </div>
-                    </Section>
-
-                    {/* Ratings Section */}
-                    <Section title="Ratings">
-                        <div className="space-y-3">
-                            {[4.5, 4.0, 3.5, 3.0].map(rating => (
-                                <button
-                                    key={rating}
-                                    onClick={() => setSelectedRating(rating)}
-                                    className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${selectedRating === rating
-                                        ? 'bg-orange-50 border-orange-200 shadow-sm'
-                                        : 'bg-white border-gray-100 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="flex items-center">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <Star
-                                                    key={i}
-                                                    size={16}
-                                                    fill={i <= Math.floor(rating) ? '#f59e0b' : 'none'}
-                                                    className={i <= Math.floor(rating) ? 'text-amber-500' : 'text-gray-300'}
-                                                />
-                                            ))}
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-700">{rating} & up</span>
-                                    </div>
-                                    <div className={`w-4 h-4 rounded-full border-2 p-0.5 ${selectedRating === rating ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
-                                        }`}>
-                                        <div className="w-full h-full rounded-full bg-white" />
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </Section>
-
-                    {/* Duration Section */}
-                    <Section title="Duration">
-                        <div className="grid grid-cols-2 gap-3">
-                            {DURATIONS.map(duration => (
-                                <button
-                                    key={duration}
-                                    onClick={() => setSelectedDuration(duration)}
-                                    className={`py-2.5 px-2 rounded-xl text-[12px] font-black border transition-all ${selectedDuration === duration
-                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                                        : 'bg-white border-gray-200 text-gray-500 hover:border-indigo-200'
-                                        }`}
-                                >
-                                    {duration}
-                                </button>
-                            ))}
-                        </div>
-                    </Section>
-                </div>
-
-                {/* Footer */}
-                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex items-center gap-4">
-                    <button
-                        onClick={clearAll}
-                        className="flex-1 py-3.5 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors"
-                    >
-                        Clear All
-                    </button>
-                    <button
-                        onClick={handleApply}
-                        className="flex-[1.5] py-3.5 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
-                    >
-                        Apply Filters
-                    </button>
-                </div>
-            </div>
+  /* ─── shared filter sections ─────────────────────────────────── */
+  const sections = (
+    <>
+      {/* CATEGORY */}
+      <Section title="Category">
+        <div className="space-y-2">
+          {TOPICS.map((t) => (
+            <Checkbox key={t} label={t}
+              checked={topics.includes(t)}
+              onChange={() => toggle(topics, setTopics, t)} />
+          ))}
         </div>
-    );
+      </Section>
+
+      {/* LEVEL */}
+      <Section title="Level">
+        <div className="space-y-2">
+          {LEVELS.map((l) => (
+            <Checkbox key={l} label={l}
+              checked={levels.includes(l)}
+              onChange={() => toggle(levels, setLevels, l)} />
+          ))}
+        </div>
+      </Section>
+
+      {/* PRICE */}
+      <Section title="Price">
+        <div className="space-y-2">
+          {(["All", "Paid", "Free"] as const).map((p) => (
+            <Radio key={p} label={p}
+              checked={price === p}
+              onChange={() => setPrice(p)} />
+          ))}
+        </div>
+      </Section>
+
+      {/* RATING */}
+      <Section title="Rating">
+        <div className="space-y-2">
+          {RATINGS.map((r) => (
+            <button key={r}
+              onClick={() => setMinRating(minRating === r ? null : r)}
+              className="w-full flex items-center gap-3 group">
+              <span className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition ${
+                minRating === r ? "border-[#6C3EF4]" : "border-slate-300 group-hover:border-slate-400"
+              }`}>
+                {minRating === r && <span className="w-2.5 h-2.5 rounded-full bg-[#6C3EF4]" />}
+              </span>
+              <span className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className={`w-3.5 h-3.5 ${
+                    i <= Math.floor(r) ? "fill-amber-400 text-amber-400" : "text-slate-300"
+                  }`} />
+                ))}
+              </span>
+              <span className="text-sm text-slate-600 group-hover:text-slate-900">
+                {r.toFixed(1)} & up
+              </span>
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      {/* DURATION */}
+      <Section title="Duration">
+        <div className="space-y-2">
+          {DURATIONS.map((d) => (
+            <Checkbox key={d.key} label={d.label}
+              checked={duration === d.key}
+              onChange={() => setDuration(duration === d.key ? null : d.key)} />
+          ))}
+        </div>
+      </Section>
+    </>
+  )
+
+  /* ─── sidebar variant ────────────────────────────────────────── */
+  if (mode === "sidebar") {
+    return (
+      <div className="bg-white border border-slate-200 rounded-lg">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Filter
+          </h2>
+          {countActive > 0 && (
+            <button onClick={resetAll}
+              className="text-xs font-semibold text-[#6C3EF4] hover:underline">
+              Clear all
+            </button>
+          )}
+        </div>
+        <div className="px-5 py-5 max-h-[calc(100vh-11rem)] overflow-y-auto">
+          {sections}
+        </div>
+      </div>
+    )
+  }
+
+  /* ─── modal variant ──────────────────────────────────────────── */
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-white shadow-2xl flex flex-col animate-slide-in">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <h2 className="text-base font-bold text-slate-900">Filter courses</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {sections}
+        </div>
+        <div className="px-6 py-3.5 border-t border-slate-200 flex gap-2">
+          <button onClick={resetAll}
+            className="flex-1 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition">
+            Reset
+          </button>
+          <button onClick={confirm}
+            className="flex-[2] py-2.5 rounded-lg bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition">
+            Show results {countActive > 0 && `(${countActive})`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
+/* ─── atoms ──────────────────────────────────────────────────── */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <div className="space-y-3">
-            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">{title}</h3>
-            {children}
-        </div>
-    );
+  return (
+    <div className="py-5 first:pt-0 last:pb-0 border-b border-slate-100 last:border-0">
+      <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.1em] mb-3">
+        {title}
+      </h3>
+      {children}
+    </div>
+  )
 }
 
-function Chip({ label, isSelected, onClick }: { label: string; isSelected: boolean; onClick: () => void }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${isSelected
-                ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
-                : 'bg-white border-gray-200 text-gray-500 hover:border-indigo-200'
-                }`}
-        >
-            {label}
-        </button>
-    );
+function Checkbox({ label, checked, onChange }:
+  { label: string; checked: boolean; onChange: () => void }) {
+  return (
+    <label className="flex items-center gap-3 cursor-pointer group py-0.5">
+      <span className={`w-[18px] h-[18px] rounded border-[1.5px] flex items-center justify-center shrink-0 transition ${
+        checked
+          ? "bg-[#6C3EF4] border-[#6C3EF4]"
+          : "bg-white border-slate-300 group-hover:border-slate-400"
+      }`}>
+        {checked && (
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12">
+            <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </span>
+      <span className="text-sm text-slate-700 group-hover:text-slate-900">{label}</span>
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+    </label>
+  )
+}
+
+function Radio({ label, checked, onChange }:
+  { label: string; checked: boolean; onChange: () => void }) {
+  return (
+    <label className="flex items-center gap-3 cursor-pointer group py-0.5">
+      <span className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition ${
+        checked ? "border-[#6C3EF4]" : "border-slate-300 group-hover:border-slate-400"
+      }`}>
+        {checked && <span className="w-2.5 h-2.5 rounded-full bg-[#6C3EF4]" />}
+      </span>
+      <span className="text-sm text-slate-700 group-hover:text-slate-900">{label}</span>
+      <input type="radio" checked={checked} onChange={onChange} className="sr-only" />
+    </label>
+  )
 }

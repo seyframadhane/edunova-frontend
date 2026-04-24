@@ -37,6 +37,9 @@ import StudyVoicePage from "./pages/study/StudyVoicePage"
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 
+import CertificatesPage from './pages/CertificatesPage';
+import CertificatePage from './pages/CertificatePage';
+
 /**
  * OnboardingGuard
  * ---------------
@@ -111,6 +114,8 @@ function App() {
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/my-learning" element={<MyLearningPage />} />
+          <Route path="certificates" element={<CertificatesPage />} />
+          <Route path="certificates/:id" element={<CertificatePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />

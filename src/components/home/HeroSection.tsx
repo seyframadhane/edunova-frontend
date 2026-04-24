@@ -1,5 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import frameImage from '../../assets/images/Frame 1274.png';
+import { Link } from 'react-router-dom';
+
 
 function HeroSection() {
   return (
@@ -36,15 +38,19 @@ function HeroSection() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button className="px-8 py-4 bg-[#1a1c20] text-white rounded-full font-bold hover:bg-gray-900 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 flex items-center gap-2">
-              Start Learning Now
-              <div className="bg-white/20 p-1 rounded-full">
-                <ArrowRight size={16} />
-              </div>
-            </button>
-            <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-all hover:border-gray-300">
-              Explore Courses
-            </button>
+            <Link to="/my-learning">
+              <button className="px-8 py-4 bg-[#1a1c20] text-white rounded-full font-bold hover:bg-gray-900 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 flex items-center gap-2">
+                Start Learning Now
+                <div className="bg-white/20 p-1 rounded-full">
+                  <ArrowRight size={16} />
+                </div>
+              </button>
+            </Link>
+            <Link to="/courses">
+              <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-all hover:border-gray-300">
+                Explore Courses
+              </button>
+            </Link>
           </div>
 
           <div className="flex items-center gap-3 pt-4">

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600;700&display=swap');
 @import "tailwindcss";
 /* @import "tw-animate-css"; */
 
@@ -241,3 +242,36 @@
     animation-direction: reverse;
   }
 }
+
+/* Certificate ribbon clip path */
+.clip-ribbon {
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 50% 70%, 10% 100%);
+}
+
+/* Certificate print styles */
+@media print {
+  body { background: white !important; }
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  #certificate {
+    width: 100% !important;
+    height: 100vh !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+}
+
+/* Mobile filter drawer slide-in */
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide horizontal scrollbar on category chips */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
