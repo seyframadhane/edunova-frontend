@@ -16,6 +16,7 @@ const OnboardingPage = () => {
 
   // Step 3: Profile form state — pre-filled from user context
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null); // 👈 NEW
   const [city, setCity] = useState(user?.city || '');
   const [country, setCountry] = useState(user?.country || '');
 
@@ -29,10 +30,10 @@ const OnboardingPage = () => {
   const fields = [
     "Design",
     "Cyber Security",
-    "Cloud Computer",
+    "Cloud Computing",
     "Front-end Development",
     "Back-end Development",
-    "Designer"
+    "Data Science"
   ];
 
   const filteredFields = fields.filter(field =>
@@ -57,20 +58,31 @@ const OnboardingPage = () => {
     } else if (currentStep === 2 && selectedFields.length > 0) {
       setCurrentStep(3);
     } else if (currentStep === 3) {
-      // city and country are optional — just save what we have
       setSaving(true);
       try {
+        // 1) Upload the avatar first (if one was picked).
+        //    This persists it to /uploads/avatars and sets user.avatar on the server.
+        if (profileImageFile) {
+          try {
+            await authService.uploadAvatar(profileImageFile);
+          } catch (err) {
+            console.error('Avatar upload failed:', err);
+            // Non-fatal — continue onboarding even if avatar upload fails.
+          }
+        }
+
+        // 2) Save the rest of the onboarding data.
+        //    The server's updateOnboarding does not touch avatar, so step (1) is preserved.
         const { data } = await authService.completeOnboarding({
           careerGoal: selectedGoal as string,
           interests: selectedFields,
           city,
           country,
         });
-        setUser(data.data);
+        setUser(data.data); // contains the new avatar URL
         navigate('/home');
       } catch (err) {
         console.error('Onboarding failed:', err);
-        // still navigate home so user isn't stuck
         navigate('/home');
       } finally {
         setSaving(false);
@@ -81,6 +93,7 @@ const OnboardingPage = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setProfileImageFile(file); // 👈 NEW — keep the raw file for upload
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImage(reader.result as string);
@@ -89,24 +102,28 @@ const OnboardingPage = () => {
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-    } else {
-      // Skip onboarding entirely — mark completed on the backend
-      setSaving(true);
-      authService.completeOnboarding({
+      return;
+    }
+    setSaving(true);
+    try {
+      if (profileImageFile) {
+        try { await authService.uploadAvatar(profileImageFile); } catch { }
+      }
+      const { data } = await authService.completeOnboarding({
         careerGoal: selectedGoal || 'Self Improvement',
         interests: selectedFields,
         city,
         country,
-      })
-        .then(({ data }) => setUser(data.data))
-        .catch(() => {})
-        .finally(() => {
-          setSaving(false);
-          navigate('/home');
-        });
+      });
+      setUser(data.data);
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+      navigate('/home');
     }
   };
 
