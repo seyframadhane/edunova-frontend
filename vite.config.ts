@@ -15,6 +15,10 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/uploads': {
+      target: 'http://localhost:5001',   // <-- and this, so videos load in the player
+      changeOrigin: true,
+    },
     },
   },
 })

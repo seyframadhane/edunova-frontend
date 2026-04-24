@@ -1,29 +1,20 @@
 import HeroSection from '../components/home/HeroSection';
-import { ContinueLearning } from '../components/home/ContinueLearning';
+import RecommendedCourses from '../components/home/RecommendedCourses';
 import CourseList from '../components/home/CourseList';
 import Instructors from '../components/home/Instructors';
 import Testimonials from '../components/home/Testimonials';
 
 function Home() {
   return (
-    <div className='bg-gray-50 min-h-screen'>
+    <>
       <HeroSection />
-
-      <div className='my-8'>
-        <ContinueLearning />
-      </div>
-
-      <CourseList title="Trending Courses" />
-      <CourseList title="Top Rated Courses" />
+      <RecommendedCourses />
+      <CourseList title="Trending Courses" trending />
       <CourseList title="New on Platform" />
-
-      <div className='my-12'>
-        <Instructors />
-      </div>
-
+      <Instructors />
       <Testimonials />
-    </div>
-  )
+    </>
+  );
 }
 
-export default Home
+export default Home;

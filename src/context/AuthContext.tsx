@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { authService } from '../services/auth.service';
 import type { User } from '../types/api';
 
@@ -8,6 +9,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (payload: any) => Promise<void>;
   logout: () => void;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,14 +29,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { data } = await authService.login({ email, password });
-    localStorage.setItem('accessToken',  data.data.accessToken);
+    localStorage.setItem('accessToken', data.data.accessToken);
     localStorage.setItem('refreshToken', data.data.refreshToken);
     setUser(data.data.user);
   };
 
   const signup = async (payload: any) => {
     const { data } = await authService.signup(payload);
-    localStorage.setItem('accessToken',  data.data.accessToken);
+    localStorage.setItem('accessToken', data.data.accessToken);
     localStorage.setItem('refreshToken', data.data.refreshToken);
     setUser(data.data.user);
   };
@@ -44,8 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const value: AuthContextType = { user, loading, login, signup, logout, setUser };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

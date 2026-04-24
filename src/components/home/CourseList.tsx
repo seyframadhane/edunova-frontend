@@ -78,7 +78,7 @@ function CourseList({ title, trending = false }: CourseListProps) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                 </a>
             </div>
-            <div className="flex overflow-x-auto pb-8 gap-6 px-4 -mx-4 scrollbar-hide snap-x">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {courses.map((course) => (
                     <div key={course.id} className="snap-center">
                         <CourseCard course={course} />
