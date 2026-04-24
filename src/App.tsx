@@ -30,6 +30,13 @@ import AdminCoursesEditPage from './admin/pages/AdminCoursesEditPage';
 import AdminInstructorsNewPage from './admin/pages/AdminInstructorsNewPage';
 import AdminNotificationsPage from './admin/pages/AdminNotificationsPage';
 
+import StudyPdfPage from "./pages/study/StudyPdfPage"
+import StudyVideoPage from "./pages/study/StudyVideoPage"
+import StudyVoicePage from "./pages/study/StudyVoicePage"
+
+import CheckoutPage from './pages/CheckoutPage';
+import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
+
 /**
  * OnboardingGuard
  * ---------------
@@ -83,28 +90,33 @@ function App() {
     <OnboardingGuard>
       <Routes>
         {/* ── Public routes ── */}
-        <Route path="/"            element={<LandingPage />} />
-        <Route path="/login"       element={<LoginPage />} />
-        <Route path="/signup"      element={<SignUpPage />} />
-        <Route path="/onboarding"  element={<OnboardingPage />} />
-        <Route path="/contact"     element={<ContactPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/edu-partner" element={<EduPartnerPage />} />
 
         {/* ── Auth-required standalone routes ── */}
-        <Route path="/learn/course/:id"     element={<CourseLearningPage />} />
+        <Route path="/learn/course/:id" element={<CourseLearningPage />} />
         <Route path="/learn/course/:id/pdf" element={<CoursePDFPage />} />
-        <Route path="/quiz/:id"             element={<QuizPage />} />
+        <Route path="/quiz/:id" element={<QuizPage />} />
+        <Route path="/courses/:courseId/study/pdf" element={<StudyPdfPage />} />
+        <Route path="/courses/:courseId/study/video" element={<StudyVideoPage />} />
+        <Route path="/courses/:courseId/study/voice" element={<StudyVoicePage />} />
 
         {/* ── Main layout routes ── */}
         <Route element={<MainLayout />}>
-          <Route path="/home"        element={<Home />} />
-          <Route path="/courses"     element={<CoursesPage />} />
-          <Route path="/course/:id"  element={<CourseDetailPage />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/my-learning" element={<MyLearningPage />} />
-          <Route path="/wishlist"    element={<WishlistPage />} />
-          <Route path="/cart"        element={<CartPage />} />
-          <Route path="/settings"    element={<SettingsPage />} />
-          <Route path="/profile"     element={<ProfilePage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         {/* ── Admin routes ── */}
@@ -116,11 +128,11 @@ function App() {
             </AdminGuard>
           }
         >
-          <Route index                   element={<div>Admin Dashboard</div>} />
-          <Route path="courses/new"      element={<AdminCoursesNewPage />} />
+          <Route index element={<div>Admin Dashboard</div>} />
+          <Route path="courses/new" element={<AdminCoursesNewPage />} />
           <Route path="courses/:id/edit" element={<AdminCoursesEditPage />} />
-          <Route path="instructors/new"  element={<AdminInstructorsNewPage />} />
-          <Route path="notifications"    element={<AdminNotificationsPage />} />
+          <Route path="instructors/new" element={<AdminInstructorsNewPage />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

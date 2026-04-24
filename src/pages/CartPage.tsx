@@ -3,6 +3,7 @@ import { ShoppingCart, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import cartBg from '../assets/images/Mycart_img.png';
 import { cartService } from '../services/cart.service';
+import { useNavigate } from "react-router-dom"
 
 interface CartItemData {
     _id: string;
@@ -20,6 +21,7 @@ export default function CartPage() {
     const [couponCode, setCouponCode] = useState('');
     const [redeemPoints, setRedeemPoints] = useState(0);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate()
 
     useEffect(() => {
         cartService.get()
@@ -33,15 +35,13 @@ export default function CartPage() {
         setCartItems(prev => prev.filter(item => item.course._id !== courseId));
     };
 
-    const handleCheckout = async () => {
-        try {
-            const { data }: any = await cartService.checkout({ couponCode, redeemPoints });
-            toast.success(`Checkout successful! Total paid: ₹${data.data.total}`);
-            setCartItems([]);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Checkout failed');
+    const handleCheckout = () => {
+        if (cartItems.length === 0) {
+            toast.error("Your cart is empty")
+            return
         }
-    };
+        navigate("/checkout")
+    }
 
     const totalPrice = cartItems.reduce((sum, item) => sum + item.course.price, 0);
 

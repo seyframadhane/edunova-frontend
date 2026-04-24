@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  BookOpen, Star, Clock, Award, ThumbsUp, Users,
-  Heart, ShoppingCart, Check, GraduationCap, Play,
+  BookOpen, Star, Clock, Award, ThumbsUp, Users, Heart, ShoppingCart,
+  Check, GraduationCap, Play, FileText, Video, Mic
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { courseService } from '../services/course.service';
@@ -240,6 +240,42 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
+      {/* ── Choose how to study ── */}
+      <div className="max-w-7xl mx-auto px-4 mt-8">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-slate-900">Choose how to study</h3>
+            <p className="text-sm text-slate-500">Pick the learning mode that fits you best</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Link to={`/courses/${id}/study/pdf`}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 hover:border-[#6C3EF4] hover:bg-[#6C3EF4]/5 p-4 transition">
+              <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><FileText size={18} /></div>
+              <div>
+                <div className="text-sm font-semibold text-slate-900">Study with PDF</div>
+                <div className="text-xs text-slate-500">Read + ask AI</div>
+              </div>
+            </Link>
+            <Link to={`/courses/${id}/study/video`}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 hover:border-[#6C3EF4] hover:bg-[#6C3EF4]/5 p-4 transition">
+              <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center"><Video size={18} /></div>
+              <div>
+                <div className="text-sm font-semibold text-slate-900">Study with Video</div>
+                <div className="text-xs text-slate-500">Watch + emotion tracking</div>
+              </div>
+            </Link>
+            <Link to={`/courses/${id}/study/voice`}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 hover:border-[#6C3EF4] hover:bg-[#6C3EF4]/5 p-4 transition">
+              <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><Mic size={18} /></div>
+              <div>
+                <div className="text-sm font-semibold text-slate-900">Study with Voice</div>
+                <div className="text-xs text-slate-500">Talk to AI tutor</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* TABS + CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="border-b border-gray-200 flex gap-8 overflow-x-auto">
@@ -247,11 +283,10 @@ export default function CourseDetailPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`py-3 text-sm font-medium capitalize border-b-2 transition whitespace-nowrap ${
-                tab === t
+              className={`py-3 text-sm font-medium capitalize border-b-2 transition whitespace-nowrap ${tab === t
                   ? 'border-[#6C3EF4] text-[#6C3EF4]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               {t} {t === 'reviews' && `(${reviews.length})`}
             </button>
@@ -334,9 +369,8 @@ function Stat({
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[#6C3EF4]">{icon}</span>
         <span
-          className={`font-semibold text-gray-900 ${
-            linkable ? 'underline underline-offset-2' : ''
-          }`}
+          className={`font-semibold text-gray-900 ${linkable ? 'underline underline-offset-2' : ''
+            }`}
         >
           {value}
         </span>

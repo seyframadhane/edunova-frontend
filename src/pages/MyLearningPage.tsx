@@ -1,50 +1,87 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PlayCircle } from 'lucide-react';
-import { enrollmentService } from '../services/enrollment.service';
+import { useEffect, useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import { BookOpen, FileText, Video, Mic, GraduationCap, Clock } from "lucide-react"
+import { enrollmentService } from "../services/enrollment.service"
+
+type Enrollment = {
+  _id: string
+  progress: number
+  course: { _id: string; title: string; image: string; level?: string; durationHours?: number }
+}
 
 export default function MyLearningPage() {
-    const [items, setItems] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const [items, setItems] = useState<Enrollment[]>([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
-    useEffect(() => {
-        enrollmentService.mine()
-            .then(({ data }: any) => setItems(data.data))
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
+  useEffect(() => {
+    enrollmentService.mine()
+      .then(({ data }: any) => setItems(data.data))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
 
-    if (loading) return <div className="p-8 text-center text-gray-400">Loading…</div>;
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading…</div>
 
-    return (
-        <div className="p-6">
-            <h1 className="text-3xl font-extrabold text-slate-800 mb-8">My Learning</h1>
-            {items.length === 0 ? (
-                <div className="text-center py-20">
-                    <p className="text-gray-400 mb-4">You haven't enrolled in any course yet.</p>
-                    <button onClick={() => navigate('/courses')} className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold">Browse courses</button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {items.map(e => (
-                        <div key={e._id} onClick={() => navigate(`/learn/course/${e.course._id}`)} className="bg-white p-4 rounded-2xl border border-gray-100 hover:shadow-lg cursor-pointer">
-                            <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
-                                <img src={e.course.image} alt={e.course.title} className="w-full h-full object-cover" />
-                                <PlayCircle className="absolute inset-0 m-auto text-white/80" size={48} />
-                            </div>
-                            <h3 className="font-bold text-gray-800 line-clamp-2 mb-3">{e.course.title}</h3>
-                            <div className="flex justify-between text-xs text-gray-500 mb-2">
-                                <span>Progress</span>
-                                <span className="font-bold">{e.progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                <div className="bg-indigo-600 h-full rounded-full transition-all" style={{ width: `${e.progress}%` }} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <GraduationCap /> My Learning
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">Pick up where you left off — or jump into a new study mode.</p>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
+          <BookOpen size={48} className="mx-auto text-slate-300" />
+          <h2 className="mt-4 text-xl font-semibold text-slate-900">You haven't enrolled in any course yet</h2>
+          <p className="text-slate-500 text-sm mt-1">Find a course you love and start learning today.</p>
+          <button onClick={() => navigate("/courses")}
+            className="mt-6 px-6 py-3 bg-[#6C3EF4] text-white rounded-xl font-semibold">Browse courses</button>
         </div>
-    );
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {items.map(e => (
+            <article key={e._id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition">
+              <div className="flex">
+                <img src={e.course.image} alt={e.course.title} className="w-36 h-36 object-cover flex-shrink-0" />
+                <div className="p-4 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    {e.course.level && <span className="px-2 py-0.5 rounded-full bg-slate-100">{e.course.level}</span>}
+                    {e.course.durationHours && <span className="flex items-center gap-1"><Clock size={12} /> {e.course.durationHours}h</span>}
+                  </div>
+                  <h3 className="mt-1 text-sm font-semibold text-slate-900 line-clamp-2">{e.course.title}</h3>
+
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                      <span>Progress</span><span className="font-semibold text-slate-700">{e.progress ?? 0}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[#6C3EF4] to-indigo-500" style={{ width: `${e.progress ?? 0}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 grid grid-cols-3 divide-x divide-slate-100">
+                <Link to={`/courses/${e.course._id}/study/pdf`}
+                  className="flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-indigo-700 hover:bg-indigo-50">
+                  <FileText size={14} /> PDF
+                </Link>
+                <Link to={`/courses/${e.course._id}/study/video`}
+                  className="flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-purple-700 hover:bg-purple-50">
+                  <Video size={14} /> Video
+                </Link>
+                <Link to={`/courses/${e.course._id}/study/voice`}
+                  className="flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-emerald-700 hover:bg-emerald-50">
+                  <Mic size={14} /> Voice
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
