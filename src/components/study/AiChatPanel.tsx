@@ -3,13 +3,14 @@ import { Send, Sparkles, FileQuestion, Loader2 } from "lucide-react"
 import { aiService, type ChatMessage } from "../../services/ai.service"
 
 type Props = {
+  courseId: string
   courseTitle: string
   onRequestSummary: () => void
   onRequestQuiz: () => void
-  extraContext?: string // emotion label, current pdf page, etc.
+  extraContext?: string
 }
 
-export default function AiChatPanel({ courseTitle, onRequestSummary, onRequestQuiz, extraContext }: Props) {
+export default function AiChatPanel({ courseId, courseTitle, onRequestSummary, onRequestQuiz, extraContext }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: `Hi! I'm your AI tutor for "${courseTitle}". Ask me anything about this course.`, at: Date.now() },
   ])
@@ -29,8 +30,14 @@ export default function AiChatPanel({ courseTitle, onRequestSummary, onRequestQu
     setInput("")
     setSending(true)
     try {
-      const reply = await aiService.chat(courseTitle, [...messages, userMsg], text + (extraContext ? `\n[ctx: ${extraContext}]` : ""))
+      const reply = await aiService.chat(
+        courseId,
+        [...messages, userMsg],
+        text + (extraContext ? `\n[ctx: ${extraContext}]` : "")
+      )
       setMessages(m => [...m, { role: "assistant", content: reply, at: Date.now() }])
+    } catch {
+      setMessages(m => [...m, { role: "assistant", content: "Sorry, I had trouble answering that. Try again.", at: Date.now() }])
     } finally {
       setSending(false)
     }

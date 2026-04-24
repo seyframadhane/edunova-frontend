@@ -2,13 +2,18 @@ import { useEffect, useState } from "react"
 import { X, Sparkles, Loader2 } from "lucide-react"
 import { aiService } from "../../services/ai.service"
 
-export default function SummaryModal({ courseTitle, onClose }: { courseTitle: string; onClose: () => void }) {
+export default function SummaryModal({
+  courseId, courseTitle, onClose,
+}: { courseId: string; courseTitle: string; onClose: () => void }) {
   const [loading, setLoading] = useState(true)
   const [text, setText] = useState("")
 
   useEffect(() => {
-    aiService.summarize(courseTitle).then(t => { setText(t); setLoading(false) })
-  }, [courseTitle])
+    aiService.summarize(courseId)
+      .then(t => setText(t))
+      .catch(() => setText("Sorry, couldn't generate a summary right now."))
+      .finally(() => setLoading(false))
+  }, [courseId])
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>

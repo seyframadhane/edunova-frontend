@@ -4,7 +4,7 @@ import StudyHeader from "../../components/study/StudyHeader"
 import AiChatPanel from "../../components/study/AiChatPanel"
 import SummaryModal from "../../components/study/SummaryModal"
 import QuizModal from "../../components/study/QuizModal"
-import { api } from "../../services/api" // adjust if your axios instance is elsewhere
+import { api } from "../../services/api"
 
 type Course = { _id: string; title: string; pdfUrl?: string; image?: string }
 
@@ -15,7 +15,7 @@ export default function StudyPdfPage() {
   const [showQuiz, setShowQuiz] = useState(false)
 
   useEffect(() => {
-    api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data))
+    api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data.data || r.data))
   }, [courseId])
 
   if (!course) return <div className="p-8 text-slate-500">Loading course…</div>
@@ -31,14 +31,15 @@ export default function StudyPdfPage() {
         </div>
         <div className="h-full min-h-0">
           <AiChatPanel
+            courseId={course._id}
             courseTitle={course.title}
             onRequestSummary={() => setShowSummary(true)}
             onRequestQuiz={() => setShowQuiz(true)}
           />
         </div>
       </div>
-      {showSummary && <SummaryModal courseTitle={course.title} onClose={() => setShowSummary(false)} />}
-      {showQuiz && <QuizModal courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
+      {showSummary && <SummaryModal courseId={course._id} courseTitle={course.title} onClose={() => setShowSummary(false)} />}
+      {showQuiz && <QuizModal courseId={course._id} courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
     </div>
   )
 }

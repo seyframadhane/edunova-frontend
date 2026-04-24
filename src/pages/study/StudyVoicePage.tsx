@@ -21,9 +21,10 @@ export default function StudyVoicePage() {
   const [showQuiz, setShowQuiz] = useState(false)
   const recogRef = useRef<any>(null)
 
-  useEffect(() => { api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data)) }, [courseId])
+  useEffect(() => {
+    api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data.data || r.data))
+  }, [courseId])
 
-  // Greet on first mount
   useEffect(() => {
     if (!course) return
     const greeting = `Hi, I'm your AI tutor for ${course.title}. Press the microphone and ask me anything.`
@@ -37,7 +38,6 @@ export default function StudyVoicePage() {
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
     u.rate = 1
-    u.pitch = 1
     u.onstart = () => setSpeaking(true)
     u.onend = () => setSpeaking(false)
     window.speechSynthesis.speak(u)
@@ -63,10 +63,13 @@ export default function StudyVoicePage() {
       setMessages(m => [...m, userMsg])
       setTranscript("")
       setThinking(true)
-      const reply = await aiService.chat(course.title, [...messages, userMsg], final)
-      setThinking(false)
-      setMessages(m => [...m, { role: "assistant", content: reply, at: Date.now() }])
-      speak(reply)
+      try {
+        const reply = await aiService.chat(course._id, [...messages, userMsg], final)
+        setMessages(m => [...m, { role: "assistant", content: reply, at: Date.now() }])
+        speak(reply)
+      } finally {
+        setThinking(false)
+      }
     }
     rec.onerror = () => setListening(false)
     recogRef.current = rec
@@ -88,7 +91,6 @@ export default function StudyVoicePage() {
           <p className="text-sm text-slate-600 mt-1">Tap the mic, ask a question, then listen to the answer.</p>
         </div>
 
-        {/* Orb */}
         <div className="flex justify-center mb-10">
           <button
             onClick={listening ? stopListening : startListening}
@@ -111,7 +113,6 @@ export default function StudyVoicePage() {
           {!listening && thinking && "Thinking…"}
         </div>
 
-        {/* Transcript */}
         <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 max-h-[40vh] overflow-y-auto">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -132,8 +133,8 @@ export default function StudyVoicePage() {
         </div>
       </div>
 
-      {showSummary && <SummaryModal courseTitle={course.title} onClose={() => setShowSummary(false)} />}
-      {showQuiz && <QuizModal courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
+      {showSummary && <SummaryModal courseId={course._id} courseTitle={course.title} onClose={() => setShowSummary(false)} />}
+      {showQuiz && <QuizModal courseId={course._id} courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
     </div>
   )
 }

@@ -11,7 +11,6 @@ const styleFor: Record<Emotion, string> = {
   neutral: "bg-slate-100 text-slate-700 border-slate-200",
 }
 
-// Map face-api expression labels -> our 5 labels
 function mapExpression(exprs: Record<string, number>): Emotion {
   const best = Object.entries(exprs).sort((a, b) => b[1] - a[1])[0]?.[0]
   switch (best) {
@@ -19,10 +18,45 @@ function mapExpression(exprs: Record<string, number>): Emotion {
     case "surprised": return "engaged"
     case "sad": return "frustrated"
     case "angry": return "frustrated"
-    case "fearful": return "confused"
     case "disgusted": return "frustrated"
+    case "fearful": return "confused"
     default: return "neutral"
   }
+}
+
+let initPromise: Promise<any> | null = null
+async function initFaceApi() {
+  if (initPromise) return initPromise
+  initPromise = (async () => {
+    const faceapi = await import("@vladmandic/face-api")
+    const tf = faceapi.tf as any
+
+    // Try WebGL first (fastest), then CPU fallback.
+    // Skip WASM entirely — it requires serving a .wasm file which Vite
+    // doesn't proxy correctly without extra config.
+    let backendOk = false
+    try {
+      await tf.setBackend("webgl")
+      await tf.ready()
+      backendOk = tf.getBackend() === "webgl"
+    } catch {
+      /* will try CPU below */
+    }
+
+    if (!backendOk) {
+      console.warn("[face-api] WebGL unavailable — falling back to CPU backend. Detection will be slower.")
+      await tf.setBackend("cpu")
+      await tf.ready()
+    }
+
+    const MODEL_URL = "/face-api-models"
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+    ])
+    return faceapi
+  })()
+  return initPromise
 }
 
 export function useEmotion(active: boolean) {
@@ -36,34 +70,33 @@ export function useEmotion(active: boolean) {
     let stream: MediaStream | null = null
     let cancelled = false
 
-    ;(async () => {
-      try {
-        const faceapi = await import("@vladmandic/face-api")
-        const MODEL_URL = "/face-api-models"
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-        ])
-        if (cancelled) return
+      ; (async () => {
+        try {
+          const faceapi = await initFaceApi()
+          if (cancelled) return
 
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
-        if (!videoRef.current) return
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-
-        intervalRef.current = window.setInterval(async () => {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
           if (!videoRef.current) return
-          const result = await faceapi
-            .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-            .withFaceExpressions()
-          if (result?.expressions) {
-            setEmotion(mapExpression(result.expressions as any))
-          }
-        }, 2000)
-      } catch (e: any) {
-        setError(e?.message || "Couldn't access camera or load models")
-      }
-    })()
+          videoRef.current.srcObject = stream
+          await videoRef.current.play()
+
+          intervalRef.current = window.setInterval(async () => {
+            if (!videoRef.current) return
+            try {
+              const result = await faceapi
+                .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+                .withFaceExpressions()
+              if (result?.expressions) {
+                setEmotion(mapExpression(result.expressions as any))
+              }
+            } catch {
+              /* transient detection error — ignore this frame */
+            }
+          }, 3500)
+        } catch (e: any) {
+          setError(e?.message || "Couldn't access camera or load models")
+        }
+      })()
 
     return () => {
       cancelled = true

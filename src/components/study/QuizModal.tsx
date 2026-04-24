@@ -2,14 +2,21 @@ import { useEffect, useState } from "react"
 import { X, FileQuestion, Loader2, Check, XCircle, RotateCcw } from "lucide-react"
 import { aiService, type QuizQuestion } from "../../services/ai.service"
 
-export default function QuizModal({ courseTitle, onClose }: { courseTitle: string; onClose: () => void }) {
+export default function QuizModal({
+  courseId, courseTitle, onClose,
+}: { courseId: string; courseTitle: string; onClose: () => void }) {
   const [loading, setLoading] = useState(true)
   const [qs, setQs] = useState<QuizQuestion[]>([])
   const [idx, setIdx] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
   const [showResult, setShowResult] = useState(false)
 
-  useEffect(() => { aiService.quiz(courseTitle).then(q => { setQs(q); setLoading(false) }) }, [courseTitle])
+  useEffect(() => {
+    aiService.quiz(courseId)
+      .then(q => setQs(q))
+      .catch(() => setQs([]))
+      .finally(() => setLoading(false))
+  }, [courseId])
 
   function choose(i: number) {
     const next = [...answers, i]
@@ -41,10 +48,14 @@ export default function QuizModal({ courseTitle, onClose }: { courseTitle: strin
         <div className="flex-1 overflow-y-auto p-6">
           {loading && <div className="flex items-center gap-2 text-slate-500"><Loader2 size={18} className="animate-spin" /> Generating quiz…</div>}
 
+          {!loading && qs.length === 0 && (
+            <p className="text-slate-500 text-sm">Couldn't generate a quiz for {courseTitle}. Please try again.</p>
+          )}
+
           {!loading && !showResult && qs[idx] && (
             <div>
               <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-5">
-                <div className="h-full bg-gradient-to-r from-[#6C3EF4] to-indigo-500" style={{ width: `${((idx) / qs.length) * 100}%` }} />
+                <div className="h-full bg-gradient-to-r from-[#6C3EF4] to-indigo-500" style={{ width: `${(idx / qs.length) * 100}%` }} />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-4">{qs[idx].question}</h3>
               <div className="space-y-2">

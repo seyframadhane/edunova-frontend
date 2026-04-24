@@ -4,7 +4,8 @@ import StudyHeader from "../../components/study/StudyHeader"
 import AiChatPanel from "../../components/study/AiChatPanel"
 import SummaryModal from "../../components/study/SummaryModal"
 import QuizModal from "../../components/study/QuizModal"
-import EmotionMonitor, { useEmotion } from "../../components/study/EmotionMonitor"
+import { useEmotion } from "../../components/study/EmotionMonitor"
+import { aiService } from "../../services/ai.service"
 import { api } from "../../services/api"
 
 type Course = { _id: string; title: string; videoUrl?: string }
@@ -19,12 +20,20 @@ export default function StudyVideoPage() {
   const { videoRef, emotion, error } = useEmotion(camOn)
 
   useEffect(() => {
-    api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data))
+    api.get(`/courses/${courseId}`).then(r => setCourse(r.data.course || r.data.data || r.data))
   }, [courseId])
+
+  // Log detected emotion to backend every 15 seconds
+  useEffect(() => {
+    if (!course?._id) return
+    const t = setInterval(() => {
+      aiService.logEmotion(course._id, emotion)
+    }, 15_000)
+    return () => clearInterval(t)
+  }, [course?._id, emotion])
 
   if (!course) return <div className="p-8 text-slate-500">Loading course…</div>
 
-  // Fallback demo video
   const videoUrl = course.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
   return (
@@ -37,7 +46,6 @@ export default function StudyVideoPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4">
-            {/* Webcam tile */}
             <div>
               <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 relative">
                 <video ref={videoRef} muted playsInline className="w-full aspect-[4/3] object-cover" />
@@ -53,7 +61,6 @@ export default function StudyVideoPage() {
               </button>
             </div>
 
-            {/* Insights card */}
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">Real-time engagement</div>
               <div className="text-2xl font-bold text-slate-900 capitalize">{emotion}</div>
@@ -70,6 +77,7 @@ export default function StudyVideoPage() {
 
         <div className="h-[70vh] lg:h-[calc(100vh-88px)] lg:sticky lg:top-[72px]">
           <AiChatPanel
+            courseId={course._id}
             courseTitle={course.title}
             extraContext={`student emotion: ${emotion}`}
             onRequestSummary={() => setShowSummary(true)}
@@ -77,8 +85,8 @@ export default function StudyVideoPage() {
           />
         </div>
       </div>
-      {showSummary && <SummaryModal courseTitle={course.title} onClose={() => setShowSummary(false)} />}
-      {showQuiz && <QuizModal courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
+      {showSummary && <SummaryModal courseId={course._id} courseTitle={course.title} onClose={() => setShowSummary(false)} />}
+      {showQuiz && <QuizModal courseId={course._id} courseTitle={course.title} onClose={() => setShowQuiz(false)} />}
     </div>
   )
 }
