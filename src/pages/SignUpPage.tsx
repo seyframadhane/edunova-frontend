@@ -79,7 +79,7 @@ const SignUpPage = (): React.JSX.Element => {
         email: form.email,
         password: form.password,
       });
-      navigate('/home');
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Sign up failed');
     } finally {

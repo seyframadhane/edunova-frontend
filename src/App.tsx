@@ -30,19 +30,47 @@ import AdminCoursesEditPage from './admin/pages/AdminCoursesEditPage';
 import AdminInstructorsNewPage from './admin/pages/AdminInstructorsNewPage';
 import AdminNotificationsPage from './admin/pages/AdminNotificationsPage';
 
+/**
+ * OnboardingGuard
+ * ---------------
+ * Rules:
+ *  - While loading auth state → show nothing (avoids flash)
+ *  - Public paths (/, /login, /signup, /contact, /edu-partner) → always accessible
+ *  - Logged-in user, onboarding NOT complete, NOT on /onboarding → redirect to /onboarding
+ *  - Logged-in user, onboarding complete, ON /onboarding → redirect to /home
+ *  - Not logged-in, on a protected path → redirect to /login (handled by ProtectedRoute on nested routes)
+ *  - Everything else → render as-is
+ */
 function OnboardingGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Show blank while resolving auth state to avoid redirect flicker
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-400">
+        Loading…
+      </div>
+    );
+  }
+
   const publicPaths = ['/', '/login', '/signup', '/contact', '/edu-partner'];
-  const isPublic = publicPaths.includes(location.pathname);
+  const isPublicPath = publicPaths.includes(location.pathname);
 
-  if (loading) return null;
-  if (!user || isPublic) return <>{children}</>;
+  // Public paths are always accessible
+  if (isPublicPath) return <>{children}</>;
 
+  // Not logged in on a non-public path → send to login
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Logged in but onboarding not done → force onboarding (unless already there)
   if (!user.onboardingCompleted && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
+
+  // Onboarding done but trying to visit /onboarding again → redirect to home
   if (user.onboardingCompleted && location.pathname === '/onboarding') {
     return <Navigate to="/home" replace />;
   }
@@ -54,16 +82,20 @@ function App() {
   return (
     <OnboardingGuard>
       <Routes>
+        {/* ── Public routes ── */}
         <Route path="/"            element={<LandingPage />} />
         <Route path="/login"       element={<LoginPage />} />
         <Route path="/signup"      element={<SignUpPage />} />
         <Route path="/onboarding"  element={<OnboardingPage />} />
         <Route path="/contact"     element={<ContactPage />} />
         <Route path="/edu-partner" element={<EduPartnerPage />} />
+
+        {/* ── Auth-required standalone routes ── */}
         <Route path="/learn/course/:id"     element={<CourseLearningPage />} />
         <Route path="/learn/course/:id/pdf" element={<CoursePDFPage />} />
         <Route path="/quiz/:id"             element={<QuizPage />} />
 
+        {/* ── Main layout routes ── */}
         <Route element={<MainLayout />}>
           <Route path="/home"        element={<Home />} />
           <Route path="/courses"     element={<CoursesPage />} />
@@ -75,6 +107,7 @@ function App() {
           <Route path="/profile"     element={<ProfilePage />} />
         </Route>
 
+        {/* ── Admin routes ── */}
         <Route
           path="/admin"
           element={

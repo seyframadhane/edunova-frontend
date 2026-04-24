@@ -21,16 +21,13 @@ export const authService = {
   },
 
   // ✅ NEW — save onboarding data
-  completeOnboarding: async (data: {
+   completeOnboarding: (payload: {
     careerGoal: string;
     interests: string[];
     city: string;
     country: string;
     avatar?: string;
-  }): Promise<User> => {
-    const res = await api.post<ApiResponse<User>>('/auth/me/onboarding', data);
-    return res.data.data;
-  },
+  }) => api.post<ApiResponse<User>>('/auth/me/onboarding', payload),
 
   uploadAvatar: async (file: File): Promise<User> => {
     const fd = new FormData();
