@@ -21,7 +21,7 @@ function Instructors() {
     }, []);
 
     return (
-        <div className="relative pb-20 bg-gray-50">
+        <div className="relative pb-20 bg-white">
             <div className="bg-[#1a1c20] pt-12 pb-36 px-8 sm:px-12 rounded-[2rem] mx-4 mt-8">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <h2 className="text-xl font-bold text-white">Meet our TOP Instructors</h2>
@@ -30,9 +30,9 @@ function Instructors() {
             </div>
 
             <div className="max-w-7xl mx-4 px-10 sm:px-16 -mt-25">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
                     {instructors.map((instructor) => (
-                        <div key={instructor._id} className="bg-[#24262b] rounded-2xl overflow-hidden shadow-2xl flex flex-col group border border-white/5">
+                        <div key={instructor._id} className="shrink-0 w-56 snap-start bg-[#24262b] rounded-2xl overflow-hidden shadow-2xl flex flex-col group border border-white/5">
                             <div className="bg-white aspect-square relative overflow-hidden">
                                 <img
                                     src={instructor.image}
