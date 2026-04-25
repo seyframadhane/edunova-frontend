@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   BookOpen, Star, Clock, Award, ThumbsUp, Users, Heart, ShoppingCart,
-  Check, GraduationCap, Play, FileText, Video, Mic
+  Check, GraduationCap, Play, FileText, Video, Mic,
+  ChevronDown, ChevronUp, Target, AlertCircle, UserCheck,
+  MessageSquare, Send, Sparkles, Calendar, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { courseService } from '../services/course.service';
@@ -241,7 +243,7 @@ export default function CourseDetailPage() {
       </div>
 
       {/* ── Choose how to study ── */}
-      <div className="max-w-7xl mx-auto px-4 mt-8">
+      {/* <div className="max-w-7xl mx-auto px-4 mt-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-slate-900">Choose how to study</h3>
@@ -274,7 +276,7 @@ export default function CourseDetailPage() {
             </Link>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* TABS + CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
@@ -284,8 +286,8 @@ export default function CourseDetailPage() {
               key={t}
               onClick={() => setTab(t)}
               className={`py-3 text-sm font-medium capitalize border-b-2 transition whitespace-nowrap ${tab === t
-                  ? 'border-[#6C3EF4] text-[#6C3EF4]'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-[#6C3EF4] text-[#6C3EF4]'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
             >
               {t} {t === 'reviews' && `(${reviews.length})`}
@@ -296,9 +298,16 @@ export default function CourseDetailPage() {
         <div className="py-8 grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {tab === 'about' && <AboutTab course={course} />}
-            {tab === 'modules' && <ModulesTab course={course} />}
+            {tab === 'modules' && <ModulesTab course={course} enrolled={enrolled} />}
             {tab === 'instructor' && <InstructorTab course={course} />}
-            {tab === 'reviews' && <ReviewsTab reviews={reviews} />}
+            {tab === 'reviews' && (
+              <ReviewsTab
+                courseId={id!}
+                reviews={reviews}
+                user={user}
+                course={course}
+                onAdded={(r) => setReviews((prev) => [r, ...prev.filter(x => x._id !== r._id)])}
+              />)}
           </div>
 
           {/* Sticky sidebar card */}
@@ -381,144 +390,517 @@ function Stat({
   );
 }
 
+
+/* =========================================================
+   ABOUT TAB
+   ========================================================= */
 function AboutTab({ course }: { course: any }) {
+  const [expanded, setExpanded] = useState(false);
+  const desc: string = course.description || 'No description available yet.';
+  const isLong = desc.length > 400;
+  const shown = expanded || !isLong ? desc : desc.slice(0, 400) + '…';
+
   return (
-    <div className="space-y-8">
-      <section>
-        <h2 className="text-xl font-bold text-gray-900 mb-3">About this course</h2>
-        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-          {course.description || 'No description available yet.'}
-        </p>
-      </section>
-
-      {course.whatYouWillLearn?.length > 0 && (
-        <section>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">What you'll learn</h3>
-          <ul className="grid sm:grid-cols-2 gap-3">
-            {course.whatYouWillLearn.map((item: string, i: number) => (
-              <li key={i} className="flex gap-2 text-sm text-gray-700">
-                <Check size={16} className="text-[#6C3EF4] shrink-0 mt-0.5" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {course.requirements?.length > 0 && (
-        <section>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Requirements</h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-            {course.requirements.map((r: string, i: number) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {course.targetAudience?.length > 0 && (
-        <section>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Who this is for</h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-            {course.targetAudience.map((r: string, i: number) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ul>
-        </section>
+    <div className="max-w-3xl">
+      <h3 className="text-xl font-bold text-gray-900 mb-3">About this course</h3>
+      <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
+        {shown}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-3 text-[#6C3EF4] text-sm font-semibold inline-flex items-center gap-1 hover:underline"
+        >
+          {expanded ? 'Show less' : 'Read more'}
+          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
       )}
     </div>
   );
 }
 
-function ModulesTab({ course }: { course: any }) {
+/* =========================================================
+   MODULES TAB
+   ========================================================= */
+function ModulesTab({ course, enrolled }: { course: any; enrolled: boolean }) {
   const modules = course.modules ?? [];
-  if (!modules.length)
-    return <p className="text-sm text-gray-500">Curriculum coming soon.</p>;
+  const [openIdx, setOpenIdx] = useState<Set<number>>(new Set([0])); // first open by default
+
+  if (!modules.length) {
+    return (
+      <div className="text-center py-16 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50">
+        <BookOpen className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+        <p className="text-gray-500">Curriculum is being prepared. Check back soon.</p>
+      </div>
+    );
+  }
+
+  const allOpen = openIdx.size === modules.length;
+  const toggleAll = () => setOpenIdx(allOpen ? new Set() : new Set(modules.map((_: any, i: number) => i)));
+  const toggle = (i: number) =>
+    setOpenIdx((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+
+  const totalLessons = modules.reduce((s: number, m: any) => s + (m.lessonsCount ?? m.lessons?.length ?? 0), 0);
+
   return (
-    <div className="space-y-3">
-      {modules.map((m: any, i: number) => (
-        <div
-          key={m._id || i}
-          className="bg-white border border-gray-100 rounded-xl p-4 flex items-start gap-4"
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Course curriculum</h3>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {modules.length} modules{totalLessons > 0 && ` · ${totalLessons} lessons`}
+            {course.durationHours > 0 && ` · ${course.durationHours}h total`}
+          </p>
+        </div>
+        <button
+          onClick={toggleAll}
+          className="text-sm font-semibold text-[#6C3EF4] hover:underline"
         >
-          <div className="w-8 h-8 rounded-full bg-purple-50 text-[#6C3EF4] flex items-center justify-center text-sm font-bold shrink-0">
-            {i + 1}
+          {allOpen ? 'Collapse all' : 'Expand all'}
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {modules.map((m: any, i: number) => {
+          const open = openIdx.has(i);
+          const lessons = m.lessons ?? [];
+          const lessonsCount = m.lessonsCount ?? lessons.length ?? 0;
+          return (
+            <div
+              key={m._id ?? i}
+              className={`rounded-xl border bg-white transition ${open ? 'border-purple-200 shadow-sm' : 'border-gray-100 hover:border-gray-200'
+                }`}
+            >
+              <button
+                onClick={() => toggle(i)}
+                className="w-full p-5 flex items-center gap-4 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C3EF4] to-[#9b6dff] text-white flex items-center justify-center font-bold flex-shrink-0">
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-900 truncate">{m.title}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {lessonsCount > 0 ? `${lessonsCount} lessons` : 'Module'}
+                    {m.durationMinutes ? ` · ${Math.round(m.durationMinutes / 60)}h ${m.durationMinutes % 60}m` : ''}
+                  </p>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {open && (
+                <div className="px-5 pb-5 pt-0">
+                  <div className="border-t border-gray-100 pt-4">
+                    {lessons.length > 0 ? (
+                      <ul className="space-y-2">
+                        {lessons.map((l: any, idx: number) => (
+                          <li
+                            key={l._id ?? idx}
+                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition"
+                          >
+                            <div className="w-7 h-7 rounded-md bg-purple-50 text-[#6C3EF4] flex items-center justify-center flex-shrink-0">
+                              {l.videoUrl ? <Play className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                            </div>
+                            <span className="text-sm text-gray-700 flex-1 truncate">{l.title}</span>
+                            {l.durationMinutes != null && (
+                              <span className="text-xs text-gray-400">{l.durationMinutes} min</span>
+                            )}
+                            {!enrolled && (
+                              <span className="text-xs text-gray-300">🔒</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">
+                        Lesson list will appear once you enroll.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   INSTRUCTOR TAB
+   ========================================================= */
+function InstructorTab({ course }: { course: any }) {
+  const i = course.instructor || {};
+  const [expanded, setExpanded] = useState(false);
+  const initials = (i.name || 'IN')
+    .split(' ').map((s: string) => s[0]).join('').slice(0, 2).toUpperCase();
+
+  const bio: string = i.bio || 'This instructor hasn\'t added a bio yet.';
+  const isLong = bio.length > 280;
+  const shown = expanded || !isLong ? bio : bio.slice(0, 280) + '…';
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
+      {/* Banner */}
+      <div className="h-24 bg-gradient-to-r from-[#6C3EF4] via-[#8a5cf6] to-[#b388ff]" />
+
+      <div className="px-6 sm:px-8 pb-8 -mt-12">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-5">
+          <div className="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg flex-shrink-0">
+            <div className="w-full h-full rounded-xl bg-gradient-to-br from-[#6C3EF4] to-[#9b6dff] flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+              {i.avatar || i.image ? (
+                <img src={i.avatar || i.image} alt={i.name} className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
+            </div>
           </div>
-          <div>
-            <h4 className="font-semibold text-gray-900">{m.title}</h4>
-            {m.lessonsCount != null && (
-              <p className="text-xs text-gray-500 mt-1">{m.lessonsCount} lessons</p>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="text-2xl font-bold text-gray-900">{i.name || 'EduNova Team'}</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{i.role || 'Senior Instructor'}</p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3 mt-6">
+          <InstructorStat
+            icon={<Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+            value={(i.rating ?? 0).toFixed(1)}
+            label="Rating"
+          />
+          <InstructorStat
+            icon={<BookOpen className="w-4 h-4 text-[#6C3EF4]" />}
+            value={i.coursesCount ?? 1}
+            label="Courses"
+          />
+          <InstructorStat
+            icon={<Users className="w-4 h-4 text-emerald-600" />}
+            value={(course.enrolledCount ?? 0).toLocaleString()}
+            label="Students"
+          />
+        </div>
+
+        {/* Bio */}
+        <div className="mt-6">
+          <h4 className="text-sm font-semibold text-gray-900 mb-2">About</h4>
+          <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">{shown}</p>
+          {isLong && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 text-[#6C3EF4] text-sm font-semibold inline-flex items-center gap-1 hover:underline"
+            >
+              {expanded ? 'Show less' : 'Read more'}
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InstructorStat({ icon, value, label }: { icon: React.ReactNode; value: any; label: string }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-center">
+      <div className="flex items-center justify-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-xl font-bold text-gray-900">{value}</span>
+      </div>
+      <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
+    </div>
+  );
+}
+
+/* =========================================================
+   REVIEWS TAB
+   ========================================================= */
+function ReviewsTab({
+  courseId, reviews, user, course, onAdded,
+}: {
+  courseId: string;
+  reviews: any[];
+  user: any;
+  course: any;
+  onAdded: (review: any) => void;
+}) {
+  const [filter, setFilter] = useState<number | 'all'>('all');
+  const [sort, setSort] = useState<'newest' | 'highest' | 'lowest'>('newest');
+  const [showForm, setShowForm] = useState(false);
+
+  // Distribution
+  const total = reviews.length;
+  const dist = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviews.filter((r) => Math.round(r.rating) === star).length;
+    return { star, count, percent: total ? Math.round((count / total) * 100) : 0 };
+  });
+  const avg = total
+    ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / total
+    : course.rating ?? 0;
+
+  // Filter + sort
+  const visible = reviews
+    .filter((r) => filter === 'all' || Math.round(r.rating) === filter)
+    .sort((a, b) => {
+      if (sort === 'highest') return b.rating - a.rating;
+      if (sort === 'lowest') return a.rating - b.rating;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+  const ownReview = user ? reviews.find((r) => r.user?._id === user._id) : null;
+
+  return (
+    <div className="space-y-8">
+      {/* Summary */}
+      <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-purple-50/50 to-white p-6">
+        <div className="grid md:grid-cols-[260px_1fr] gap-6 items-center">
+          {/* Big avg */}
+          <div className="text-center md:border-r md:border-gray-200 md:pr-6">
+            <div className="text-5xl font-bold text-gray-900">{avg.toFixed(1)}</div>
+            <div className="flex items-center justify-center gap-0.5 my-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star
+                  key={i}
+                  className={`w-5 h-5 ${i <= Math.round(avg) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+                />
+              ))}
+            </div>
+            <div className="text-sm text-gray-500">
+              {total} {total === 1 ? 'review' : 'reviews'}
+            </div>
+          </div>
+
+          {/* Distribution */}
+          <div className="space-y-2">
+            {dist.map((d) => (
+              <button
+                key={d.star}
+                onClick={() => setFilter(filter === d.star ? 'all' : d.star)}
+                className={`w-full flex items-center gap-3 group ${filter === d.star ? 'opacity-100' : 'opacity-90 hover:opacity-100'
+                  }`}
+              >
+                <span className="w-8 text-sm font-medium text-gray-600 flex items-center gap-0.5">
+                  {d.star} <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                </span>
+                <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div
+                    className="h-full bg-yellow-400 group-hover:bg-yellow-500 transition-all"
+                    style={{ width: `${d.percent}%` }}
+                  />
+                </div>
+                <span className="w-12 text-right text-xs text-gray-500">{d.count}</span>
+              </button>
+            ))}
+            {filter !== 'all' && (
+              <button
+                onClick={() => setFilter('all')}
+                className="text-xs text-[#6C3EF4] font-semibold hover:underline mt-1"
+              >
+                Clear filter
+              </button>
             )}
           </div>
         </div>
-      ))}
-    </div>
-  );
-}
 
-function InstructorTab({ course }: { course: any }) {
-  const i = course.instructor || {};
-  const initials = (i.name || 'IN')
-    .split(' ')
-    .map((s: string) => s[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-6 flex gap-4">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6C3EF4] to-[#EC4899] flex items-center justify-center text-white font-semibold overflow-hidden shrink-0">
-        {i.avatar || i.image ? (
-          <img src={i.avatar || i.image} className="w-full h-full object-cover" alt="" />
-        ) : (
-          initials
-        )}
-      </div>
-      <div>
-        <h3 className="text-lg font-bold text-gray-900">{i.name || 'EduNova Team'}</h3>
-        <p className="text-sm text-[#6C3EF4] mb-2">{i.role || 'Instructor'}</p>
-        <p className="text-sm text-gray-700 leading-relaxed">{i.bio || 'Bio coming soon.'}</p>
-      </div>
-    </div>
-  );
-}
-
-function ReviewsTab({ reviews }: { reviews: any[] }) {
-  if (!reviews.length)
-    return (
-      <p className="text-sm text-gray-500">No reviews yet. Be the first to review this course!</p>
-    );
-  return (
-    <div className="space-y-4">
-      {reviews.map((r) => (
-        <div key={r._id} className="bg-white border border-gray-100 rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6C3EF4] to-[#EC4899] flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
-              {r.user?.avatar ? (
-                <img src={r.user.avatar} className="w-full h-full object-cover" alt="" />
-              ) : (
-                `${r.user?.firstName?.[0] || '?'}${r.user?.lastName?.[0] || ''}`
-              )}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                {r.user?.firstName} {r.user?.lastName}
-              </p>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    size={12}
-                    className={
-                      i <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                    }
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="flex flex-wrap gap-3 items-center justify-between mt-6 pt-6 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Sort by</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as any)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#6C3EF4]"
+            >
+              <option value="newest">Newest</option>
+              <option value="highest">Highest rated</option>
+              <option value="lowest">Lowest rated</option>
+            </select>
           </div>
-          <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>
+
+          {user && !ownReview && !showForm && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-[#6C3EF4] text-white rounded-full text-sm font-semibold hover:bg-[#5a30d4] transition flex items-center gap-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Write a review
+            </button>
+          )}
         </div>
-      ))}
+      </div>
+
+      {/* Form */}
+      {showForm && (
+        <ReviewForm
+          courseId={courseId}
+          onCancel={() => setShowForm(false)}
+          onSubmitted={(r) => {
+            onAdded(r);
+            setShowForm(false);
+          }}
+        />
+      )}
+
+      {/* List */}
+      {visible.length === 0 ? (
+        <div className="text-center py-16 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+          <MessageSquare className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-600 font-medium">No reviews yet</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {user ? 'Be the first to share your experience!' : 'Log in to leave the first review.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visible.map((r) => (
+            <ReviewCard key={r._id} review={r} />
+          ))}
+        </div>
+      )}
     </div>
   );
+}
+
+function ReviewCard({ review }: { review: any }) {
+  const u = review.user || {};
+  const initials = `${u.firstName?.[0] || '?'}${u.lastName?.[0] || ''}`.toUpperCase();
+  const date = review.createdAt ? formatRelative(review.createdAt) : '';
+
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-5 hover:border-purple-100 hover:shadow-sm transition">
+      <div className="flex items-start gap-4">
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#6C3EF4] to-[#9b6dff] flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
+          {u.avatar ? <img src={u.avatar} alt="" className="w-full h-full object-cover" /> : initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h5 className="font-semibold text-gray-900">
+              {u.firstName} {u.lastName}
+            </h5>
+            <span className="text-xs text-gray-400 flex items-center gap-1">
+              <Calendar className="w-3 h-3" /> {date}
+            </span>
+          </div>
+          <div className="flex items-center gap-0.5 mt-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+              />
+            ))}
+          </div>
+          {review.comment && (
+            <p className="text-gray-700 text-sm leading-relaxed mt-2.5 whitespace-pre-line">
+              {review.comment}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReviewForm({
+  courseId, onCancel, onSubmitted,
+}: { courseId: string; onCancel: () => void; onSubmitted: (r: any) => void }) {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async () => {
+    if (!rating) return toast.error('Please pick a star rating');
+    if (comment.trim().length < 5) return toast.error('Tell us a bit more (min 5 chars)');
+    setSubmitting(true);
+    try {
+      const { data }: any = await reviewService.create({
+        courseId, rating, comment: comment.trim(),
+      });
+      toast.success('Thanks for your review!');
+      onSubmitted(data.data);
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Could not submit review');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const labels = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+
+  return (
+    <div className="rounded-2xl border border-purple-100 bg-white p-6">
+      <h4 className="text-lg font-bold text-gray-900 mb-1">Share your experience</h4>
+      <p className="text-sm text-gray-500 mb-5">Your feedback helps other learners decide.</p>
+
+      {/* Star picker */}
+      <div className="flex items-center gap-2 mb-5">
+        {[1, 2, 3, 4, 5].map((i) => {
+          const active = i <= (hover || rating);
+          return (
+            <button
+              key={i}
+              type="button"
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(0)}
+              onClick={() => setRating(i)}
+              className="transition-transform hover:scale-110"
+            >
+              <Star
+                className={`w-8 h-8 ${active ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+              />
+            </button>
+          );
+        })}
+        <span className="text-sm text-gray-500 ml-2">{labels[hover || rating]}</span>
+      </div>
+
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="What did you like? What could be better?"
+        rows={4}
+        maxLength={1000}
+        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#6C3EF4] focus:ring-2 focus:ring-purple-100 resize-none"
+      />
+      <div className="text-right text-xs text-gray-400 mt-1">{comment.length}/1000</div>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          onClick={onCancel}
+          disabled={submitting}
+          className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={submit}
+          disabled={submitting}
+          className="px-5 py-2 rounded-full text-sm font-semibold bg-[#6C3EF4] text-white hover:bg-[#5a30d4] disabled:opacity-60 flex items-center gap-2"
+        >
+          <Send className="w-4 h-4" />
+          {submitting ? 'Submitting…' : 'Submit review'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   utils
+   ========================================================= */
+function formatRelative(iso: string) {
+  const d = new Date(iso).getTime();
+  const diff = (Date.now() - d) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
