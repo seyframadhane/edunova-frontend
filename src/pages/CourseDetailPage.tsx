@@ -53,13 +53,38 @@ export default function CourseDetailPage() {
 
   const handleEnroll = async () => {
     if (!requireAuth() || !id) return;
+
+    // Free course → enroll and go to My Learning
+    if (course?.isFree || Number(course?.price) === 0) {
+      try {
+        await enrollmentService.enroll(id);
+        setEnrolled(true);
+        toast.success('Enrolled! Course added to My Learning');
+        navigate('/my-learning', { state: { openStudyForCourseId: id } });
+      } catch (e: any) {
+        const msg = e?.response?.data?.message || '';
+        if (/already/i.test(msg)) {
+          navigate('/my-learning', { state: { openStudyForCourseId: id } });
+          return;
+        }
+        toast.error(msg || 'Enroll failed');
+      }
+      return;
+    }
+
+    // Paid course → add to cart and go to cart
     try {
-      await enrollmentService.enroll(id);
-      setEnrolled(true);
-      toast.success('Enrolled! Opening your classroom…');
-      navigate(`/learn/course/${id}`);
+      await cartService.add(id);
+      toast.success('Added to cart');
+      navigate('/cart');
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Enroll failed');
+      const msg = e?.response?.data?.message || '';
+      if (/already/i.test(msg)) {
+        toast.message('Already in your cart');
+        navigate('/cart');
+        return;
+      }
+      toast.error(msg || 'Failed to add to cart');
     }
   };
 
@@ -171,7 +196,7 @@ export default function CourseDetailPage() {
                 onClick={handleEnroll}
                 className="px-8 py-3 bg-[#6C3EF4] text-white rounded-full font-semibold hover:bg-[#5a30d4] transition shadow-lg shadow-purple-200"
               >
-                Enroll now
+                {course?.isFree || Number(course?.price) === 0 ? 'Enroll for free' : 'Enroll now'}
               </button>
             )}
             <button
