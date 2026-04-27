@@ -152,9 +152,9 @@ export default function MyLearningPage() {
           onPick={(mode) => {
             const id = selected.course._id;
             setSelected(null);
-            if (mode === "pdf") navigate(`/study/pdf/${id}`);
-            else if (mode === "video") navigate(`/study/video/${id}`);
-            else navigate(`/study/voice/${id}`);
+            if (mode === "pdf") navigate(`/courses/${id}/study/pdf`);
+            else if (mode === "video") navigate(`/courses/${id}/study/video`);
+            else navigate(`/courses/${id}/study/voice`);
           }}
         />
       )}

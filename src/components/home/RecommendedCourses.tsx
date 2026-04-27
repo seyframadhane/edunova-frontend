@@ -42,7 +42,7 @@ export default function RecommendedCourses() {
     return (
       <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">{title}</h2>
-        <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
+        <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-proximity scrollbar-thin">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="shrink-0 w-72 snap-start bg-white rounded-2xl p-3 border border-gray-100 animate-pulse">
               <div className="aspect-video bg-gray-200 rounded-xl" />
@@ -74,7 +74,7 @@ export default function RecommendedCourses() {
         </Link>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-smooth">
+      <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-proximity scroll-smooth">
         {courses.map((course) => (
           <CourseCard
             key={course.id}

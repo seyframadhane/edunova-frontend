@@ -5,6 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+
+  --color-brand: #6C3EF4;
+  --color-brand-soft: #A06BFF;
+  --color-brand-ink: #0F1115;
+
+  
   /* ── Brand (purple) ─────────────────── */
   --color-primary: #6C3EF4;
   --color-primary-dark: #5A30D4;
@@ -329,4 +335,38 @@
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ─────────────────────────────────────────────
+   Performance helpers (added)
+   ───────────────────────────────────────────── */
+
+/* Skip render work for offscreen sections */
+.cv-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 800px 1000px;
+}
+
+/* Slow the marquee + only promote layer while running */
+.marquee-inner {
+  animation-duration: 10s;
+  will-change: auto;
+}
+.marquee-row.is-running .marquee-inner {
+  will-change: transform;
+}
+
+/* Pause marquee when offscreen / when wrapper has .is-paused */
+.marquee-row.is-paused .marquee-inner {
+  animation-play-state: paused;
+}
+
+/* Respect user motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-inner,
+  .animate-blob,
+  .animate-slide-in,
+  .animate-slide-in-right {
+    animation: none !important;
+  }
 }

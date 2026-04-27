@@ -423,7 +423,7 @@ export default function ProfilePage() {
                             )}
                         </Section>
 
-                        <Section title="Security" icon={<Lock size={18} />}>
+                        {/* <Section title="Security" icon={<Lock size={18} />}>
                             {!showPwd ? (
                                 <button
                                     onClick={() => setShowPwd(true)}
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                                     </div>
                                 </form>
                             )}
-                        </Section>
+                        </Section> */}
 
                         <Section title="Account" icon={<Shield size={18} />}>
                             <button

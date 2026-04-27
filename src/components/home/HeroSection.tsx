@@ -1,126 +1,110 @@
-import { ArrowRight } from 'lucide-react';
-import frameImage from '../../assets/images/Frame 1274.png';
+import { ArrowRight, PlayCircle, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import frameImage from '../../assets/images/Frame 1274.png';
 
 function HeroSection() {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-white p-8 sm:p-12 mb-10">
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-        <div className="max-w-xl space-y-8">
+    <section className="relative overflow-hidden bg-white">
+      {/* Decorative glows — smaller blur radius, fewer composited layers */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 -right-24 w-[28rem] h-[28rem] rounded-full bg-primary/10 blur-2xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -left-24 w-[24rem] h-[24rem] rounded-full bg-amber-200/25 blur-2xl"
+      />
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-[#1a1c20] leading-[1.1]">
-            Upgrade your skill for better <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 uppercase">FUTURE</span>
-          </h1>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-20 lg:pb-28">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          {/* Copy */}
+          <div className="lg:col-span-7 max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              New: AI study companion is live
+            </span>
 
-          <div className="relative py-4">
-            {/* Simple representation of the curved text, or just styled text */}
-            <div className="flex items-center gap-8 text-lg font-medium text-gray-500">
-              <div className="flex flex-col items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                <span>Explore</span>
-              </div>
-              {/* Dashed line simulation */}
-              <div className="h-px w-12 bg-gray-300 border-t border-dashed"></div>
+            <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight text-[#0F1115]">
+              Upgrade your skills for a{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">
+                better future
+              </span>
+            </h1>
 
-              <div className="flex flex-col items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                <span>Learn</span>
-              </div>
-              {/* Dashed line simulation */}
-              <div className="h-px w-12 bg-gray-300 border-t border-dashed"></div>
+            <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+              Learn from world-class instructors with hands-on courses,
+              certificates, and an AI tutor that adapts to how you study.
+            </p>
 
-              <div className="flex flex-col items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
-                <span>Grow</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <Link to="/my-learning">
-              <button className="px-8 py-4 bg-[#1a1c20] text-white rounded-full font-bold hover:bg-gray-900 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200 flex items-center gap-2">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                to="/my-learning"
+                className="group inline-flex items-center gap-2 rounded-full bg-[#0F1115] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-colors hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
                 Start Learning Now
-                <div className="bg-white/20 p-1 rounded-full">
-                  <ArrowRight size={16} />
-                </div>
-              </button>
-            </Link>
-            <Link to="/courses">
-              <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-all hover:border-gray-300">
+                <span className="grid place-items-center w-6 h-6 rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
+                  <ArrowRight size={14} />
+                </span>
+              </Link>
+              <Link
+                to="/courses"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50"
+              >
+                <PlayCircle size={18} className="text-primary" />
                 Explore Courses
-              </button>
-            </Link>
-          </div>
+              </Link>
+            </div>
 
-          <div className="flex items-center gap-3 pt-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className={`w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden`}>
-                  <img src={`https://randomuser.me/api/portraits/thumb/men/${10 + i}.jpg`} alt="User" />
+            {/* Social proof */}
+            <div className="mt-10 flex items-center gap-5">
+              <div className="flex -space-x-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <img
+                    key={i}
+                    src={`https://randomuser.me/api/portraits/thumb/men/${10 + i}.jpg`}
+                    alt=""
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                  />
+                ))}
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1 text-amber-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={14} fill="currentColor" />
+                  ))}
+                  <span className="ml-1 text-sm font-semibold text-gray-900">
+                    4.9
+                  </span>
                 </div>
-              ))}
-            </div>
-            <div>
-              <p className="font-bold text-gray-900">10k+ <span className="text-gray-500 font-normal">Active Students</span></p>
+                <span className="text-xs text-gray-500">
+                  Loved by 10k+ active students
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="relative w-full max-w-lg lg:max-w-xl flex justify-center lg:justify-end mt-10 lg:mt-0">
-          {/* Background Circles */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-          <div className="absolute top-20 -left-4 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter opacity-70 "></div> {/* blur-xl animate-blob */}
-          <div className="absolute -bottom-0 right-5 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter opacity-70 "></div> {/* animate-blob animation-delay-2000 */}
-
-          {/* Floating Icons */}
-          {/* Trophy - Top Left */}
-          {/* <div className="absolute top-10 left-10 bg-white p-3 rounded-full shadow-lg z-20 animate-bounce duration-[3000ms]">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-              <path d="M4 22h16" />
-              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-            </svg>
-          </div> */}
-
-          {/* Lightbulb - Top Right */}
-          {/* <div className="absolute top-20 -right-4 bg-white p-3 rounded-full shadow-lg z-20 animate-pulse">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.3-2.7-6-6-6 0 0-6 2-6 6 0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5" />
-              <path d="M9 18h6" />
-              <path d="M10 22h4" />
-            </svg>
-          </div> */}
-
-          {/* Badge - Mid Left */}
-          {/* <div className="absolute bottom-40 left-0 bg-white p-3 rounded-full shadow-lg z-20">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-              <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-          </div> */}
-
-          {/* Chart - Mid Right */}
-          {/* <div className="absolute bottom-20 -right-8 bg-white p-3 rounded-full shadow-lg z-20">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-              <path d="M3 3v18h18" />
-              <path d="m19 9-5 5-4-4-3 3" />
-            </svg>
-          </div> */}
-
-          <div className="relative z-10 w-full">
-            <img
-              src={frameImage}
-              alt="Upgrade your future"
-              className="w-full h-auto object-contain drop-shadow-2xl"
-            />
+          {/* Visual */}
+          <div className="lg:col-span-5">
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/15 via-white to-amber-100/40 blur-2xl" />
+              <img
+                src={frameImage}
+                alt="Upgrade your future"
+                width={520}
+                height={520}
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-auto object-contain drop-shadow-2xl"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
