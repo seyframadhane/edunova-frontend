@@ -19,13 +19,7 @@ export interface CourseProps {
   isWishlisted?: boolean;
 }
 
-function CourseCardImpl({
-  course,
-  className,
-}: {
-  course: CourseProps;
-  className?: string;
-}) {
+function CourseCardImpl({ course, className }: { course: CourseProps; className?: string }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [wishlisted, setWishlisted] = useState(!!course.isWishlisted);
@@ -56,9 +50,7 @@ function CourseCardImpl({
     try {
       const { data }: any = await wishlistService.toggle(course.id);
       setWishlisted(data.data.wishlisted);
-      toast.success(
-        data.data.wishlisted ? 'Added to wishlist' : 'Removed from wishlist',
-      );
+      toast.success(data.data.wishlisted ? 'Added to wishlist' : 'Removed from wishlist');
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to update wishlist');
     }
@@ -67,9 +59,7 @@ function CourseCardImpl({
   return (
     <div
       onClick={() => navigate(`/course/${course.id}`)}
-      className={`group bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-[transform,box-shadow] duration-300 cursor-pointer flex flex-col ${
-        className || ''
-      }`}
+      className={`group bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-[transform,box-shadow] duration-300 cursor-pointer flex flex-col ${className || ''}`}
     >
       <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100">
         <img
@@ -77,7 +67,7 @@ function CourseCardImpl({
           alt={course.title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover transition-transform duration-300 motion-safe:[@media(hover:hover)]:group-hover:scale-105 pointer-events-none"
+          className="w-full h-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-105 pointer-events-none"
         />
         <button
           onClick={handleToggleWishlist}
@@ -85,9 +75,7 @@ function CourseCardImpl({
         >
           <Heart
             size={16}
-            className={
-              wishlisted ? 'fill-pink-500 text-pink-500' : 'text-gray-600'
-            }
+            className={wishlisted ? 'fill-pink-500 text-pink-500' : 'text-gray-600'}
           />
         </button>
         <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full">
@@ -100,7 +88,7 @@ function CourseCardImpl({
 
       <div className="pt-3 px-1 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-medium px-2 py-0.5 bg-primary-50 text-primary rounded-full">
+          <span className="text-[11px] font-medium px-2 py-0.5 bg-violet-50 text-violet-600 rounded-full">
             {course.category}
           </span>
           <span className="text-[11px] font-medium px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
@@ -116,16 +104,14 @@ function CourseCardImpl({
 
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-baseline gap-1.5">
-            <span className="font-bold text-primary">₹{course.price}</span>
+            <span className="font-bold text-violet-600">₹{course.price}</span>
             {course.oldPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                ₹{course.oldPrice}
-              </span>
+              <span className="text-xs text-gray-400 line-through">₹{course.oldPrice}</span>
             )}
           </div>
           <button
             onClick={handleAddToCart}
-            className="w-8 h-8 bg-[#0F1115] text-white rounded-full flex items-center justify-center hover:bg-primary transition-colors"
+            className="w-8 h-8 bg-slate-950 text-white rounded-full flex items-center justify-center hover:bg-violet-600 transition-colors"
             title="Add to cart"
           >
             <ShoppingCart size={14} />

@@ -19,16 +19,13 @@ export default function Instructors() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    instructorService
-      .list()
+    instructorService.list()
       .then(({ data }) => setInstructors(data.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const sorted = [...instructors].sort(
-    (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
-  );
+  const sorted = [...instructors].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   const featured = sorted[0];
   const rest = sorted.slice(1, 5);
 
@@ -43,8 +40,7 @@ export default function Instructors() {
           to="/instructors"
           className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/10 hover:text-white"
         >
-          View all instructors
-          <ArrowUpRight size={14} />
+          View all instructors <ArrowUpRight size={14} />
         </Link>
       }
     >
@@ -74,9 +70,9 @@ function FeaturedCard({ instructor }: { instructor: Instructor }) {
           alt={instructor.name}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover opacity-90 transition-transform duration-500 motion-safe:[@media(hover:hover)]:group-hover:scale-[1.04] pointer-events-none"
+          className="w-full h-full object-cover opacity-90 transition-transform duration-500 motion-safe:group-hover:scale-[1.04] pointer-events-none"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115] via-[#0F1115]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
       </div>
 
       <div className="relative flex items-start justify-between p-6">
@@ -91,7 +87,7 @@ function FeaturedCard({ instructor }: { instructor: Instructor }) {
       </div>
 
       <div className="relative mt-auto p-6 pt-24 sm:pt-32 flex flex-col justify-end min-h-[420px]">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-primary-light font-semibold">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-violet-400 font-semibold">
           {instructor.role}
         </p>
         <h3 className="mt-2 text-2xl sm:text-3xl font-extrabold text-white leading-tight">
@@ -102,10 +98,9 @@ function FeaturedCard({ instructor }: { instructor: Instructor }) {
             {instructor.bio}
           </p>
         )}
-
         <div className="mt-5 flex items-center gap-4 text-sm text-gray-300">
           <span className="inline-flex items-center gap-1.5">
-            <BookOpen size={14} className="text-primary-light" />
+            <BookOpen size={14} className="text-violet-400" />
             {instructor.coursesCount} courses
           </span>
           <span className="h-3 w-px bg-white/20" />
@@ -114,10 +109,9 @@ function FeaturedCard({ instructor }: { instructor: Instructor }) {
             {instructor.rating?.toFixed(1) ?? '0.0'} avg rating
           </span>
         </div>
-
         <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
           View profile
-          <span className="grid place-items-center w-7 h-7 rounded-full bg-white/15 transition-colors group-hover:bg-primary">
+          <span className="grid place-items-center w-7 h-7 rounded-full bg-white/15 transition-colors group-hover:bg-violet-600">
             <ArrowUpRight size={14} />
           </span>
         </div>
@@ -126,13 +120,7 @@ function FeaturedCard({ instructor }: { instructor: Instructor }) {
   );
 }
 
-function CompactCard({
-  instructor,
-  index,
-}: {
-  instructor: Instructor;
-  index: number;
-}) {
+function CompactCard({ instructor, index }: { instructor: Instructor; index: number }) {
   return (
     <Link
       to={`/instructors/${instructor._id}`}
@@ -144,9 +132,9 @@ function CompactCard({
           alt={instructor.name}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover transition-transform duration-500 motion-safe:[@media(hover:hover)]:group-hover:scale-[1.05] pointer-events-none"
+          className="w-full h-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.05] pointer-events-none"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115]/80 via-[#0F1115]/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
 
         <span className="absolute top-3 left-3 grid place-items-center w-7 h-7 rounded-full bg-white/15 text-white text-[11px] font-bold">
           {String(index).padStart(2, '0')}
@@ -158,12 +146,10 @@ function CompactCard({
       </div>
 
       <div className="p-4 flex-1 flex flex-col">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-primary-light font-semibold">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-violet-400 font-semibold">
           {instructor.role}
         </p>
-        <h3 className="mt-1 font-semibold text-white truncate">
-          {instructor.name}
-        </h3>
+        <h3 className="mt-1 font-semibold text-white truncate">{instructor.name}</h3>
         <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
           <span className="inline-flex items-center gap-1">
             <BookOpen size={12} />

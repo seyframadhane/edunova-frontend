@@ -1,12 +1,5 @@
 import { Link } from 'react-router-dom';
-import {
-  Code2,
-  Palette,
-  LineChart,
-  Megaphone,
-  Camera,
-  BrainCircuit,
-} from 'lucide-react';
+import { Code2, Palette, LineChart, Megaphone, Camera, BrainCircuit } from 'lucide-react';
 import { Section } from '../ui/Section';
 
 const categories = [
@@ -32,13 +25,11 @@ export default function CategoryStrip() {
             to={`/courses?category=${encodeURIComponent(name)}`}
             className="group relative rounded-2xl border border-gray-100 bg-white p-5 transition-[box-shadow,border-color] duration-200 hover:border-gray-200 hover:shadow-md"
           >
-            <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} text-white grid place-items-center mb-3 shadow-sm`}
-            >
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} text-white grid place-items-center mb-3 shadow-sm`}>
               <Icon size={18} />
             </div>
             <div className="text-sm font-semibold text-gray-900">{name}</div>
-            <div className="mt-0.5 text-xs text-gray-500 group-hover:text-primary transition-colors">
+            <div className="mt-0.5 text-xs text-gray-500 transition-colors group-hover:text-violet-600">
               Explore →
             </div>
           </Link>

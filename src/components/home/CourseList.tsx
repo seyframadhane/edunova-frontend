@@ -10,10 +10,7 @@ interface CourseListProps {
   trending?: boolean;
 }
 
-export default function CourseList({
-  title,
-  trending = false,
-}: CourseListProps) {
+export default function CourseList({ title, trending = false }: CourseListProps) {
   const [courses, setCourses] = useState<CourseProps[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,22 +18,13 @@ export default function CourseList({
     const params: Record<string, any> = { limit: trending ? 3 : 8 };
     if (trending) params.sort = '-rating';
 
-    courseService
-      .list(params)
+    courseService.list(params)
       .then(({ data }) => {
-        setCourses(
-          data.data.map((c: any) => ({
-            id: c._id,
-            title: c.title,
-            category: c.category,
-            level: c.level,
-            instructor: c.instructor?.name || 'Unknown',
-            price: c.price,
-            oldPrice: c.oldPrice,
-            rating: c.rating,
-            image: c.image,
-          })),
-        );
+        setCourses(data.data.map((c: any) => ({
+          id: c._id, title: c.title, category: c.category, level: c.level,
+          instructor: c.instructor?.name || 'Unknown',
+          price: c.price, oldPrice: c.oldPrice, rating: c.rating, image: c.image,
+        })));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -46,31 +34,25 @@ export default function CourseList({
     <Link
       to="/courses"
       className={`inline-flex items-center gap-1 text-sm font-semibold transition-colors ${
-        trending
-          ? 'text-gray-300 hover:text-white'
-          : 'text-primary hover:underline'
+        trending ? 'text-gray-300 hover:text-white' : 'text-violet-600 hover:underline'
       }`}
     >
       See all <ArrowRight size={14} />
     </Link>
   );
 
+  const gridClasses = `grid gap-6 ${
+    trending ? 'md:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+  }`;
+
   if (loading) {
     return (
       <Section tone={trending ? 'dark' : 'light'} title={title} action={action}>
-        <div
-          className={`grid gap-6 ${
-            trending
-              ? 'md:grid-cols-3'
-              : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-          }`}
-        >
+        <div className={gridClasses}>
           {Array.from({ length: trending ? 3 : 4 }).map((_, i) => (
             <div
               key={i}
-              className={`rounded-2xl animate-pulse ${
-                trending ? 'bg-white/5 h-72' : 'bg-gray-100 h-72'
-              }`}
+              className={`rounded-2xl animate-pulse h-72 ${trending ? 'bg-white/5' : 'bg-gray-100'}`}
             />
           ))}
         </div>
@@ -85,18 +67,10 @@ export default function CourseList({
       tone={trending ? 'dark' : 'light'}
       eyebrow={trending ? 'Spotlight' : undefined}
       title={title}
-      description={
-        trending ? 'The most-loved courses on EduNova right now.' : undefined
-      }
+      description={trending ? 'The most-loved courses on EduNova right now.' : undefined}
       action={action}
     >
-      <div
-        className={`grid gap-6 ${
-          trending
-            ? 'md:grid-cols-3'
-            : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-        }`}
-      >
+      <div className={gridClasses}>
         {courses.slice(0, trending ? 3 : 8).map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}

@@ -7,7 +7,7 @@ import ValueProps from '../components/home/ValueProps';
 import Instructors from '../components/home/Instructors';
 import Testimonials from '../components/home/Testimonials';
 
-function Home() {
+export default function Home() {
   return (
     <main className="bg-white">
       <HeroSection />
@@ -22,5 +22,3 @@ function Home() {
     </main>
   );
 }
-
-export default Home;
