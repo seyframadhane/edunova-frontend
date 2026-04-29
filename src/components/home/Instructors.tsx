@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Star, BookOpen, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Star, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { instructorService } from '../../services/instructor.service';
-import { Section } from '../ui/Section';
+import DefaultUserImage from '../../assets/images/default user image.png';
 
 interface Instructor {
   _id: string;
@@ -19,157 +19,125 @@ export default function Instructors() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    instructorService.list()
+    instructorService
+      .list()
       .then(({ data }) => setInstructors(data.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const sorted = [...instructors].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-  const featured = sorted[0];
-  const rest = sorted.slice(1, 5);
+  const topInstructors = [...instructors]
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, 4);
 
   return (
-    <Section
-      tone="dark"
-      eyebrow="Meet our team"
-      title="Top instructors, carefully curated"
-      description="Practitioners and educators with real-world experience, ready to guide your next step."
-      action={
-        <Link
-          to="/instructors"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/10 hover:text-white"
-        >
-          View all instructors <ArrowUpRight size={14} />
-        </Link>
-      }
-    >
-      {loading ? (
-        <InstructorsSkeleton />
-      ) : !featured ? null : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-2 gap-5 auto-rows-fr">
-          <FeaturedCard instructor={featured} />
-          {rest.map((ins, i) => (
-            <CompactCard key={ins._id} instructor={ins} index={i + 2} />
-          ))}
+    <section className="bg-white py-24">
+      <div className="container px-6">
+        <div className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div className="max-w-2xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-sm font-black text-purple-700">
+              <Users className="h-4 w-4" />
+              Expert instructors
+            </div>
+
+            <h2 className="text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
+              Meet our team
+            </h2>
+
+            <p className="mt-4 text-lg leading-8 text-slate-600">
+              Top instructors, carefully curated to guide students with clear
+              lessons, practical experience, and professional support.
+            </p>
+          </div>
+
+          <Link
+            to="/courses"
+            className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-purple-700"
+          >
+            View all instructors
+            <ArrowUpRight className="h-5 w-5" />
+          </Link>
         </div>
-      )}
-    </Section>
+
+        {loading ? (
+          <InstructorsSkeleton />
+        ) : topInstructors.length === 0 ? (
+          <div className="rounded-3xl border border-slate-100 bg-slate-50 p-10 text-center">
+            <p className="font-semibold text-slate-600">
+              No instructors available yet.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {topInstructors.map((instructor) => (
+              <InstructorCard key={instructor._id} instructor={instructor} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
-function FeaturedCard({ instructor }: { instructor: Instructor }) {
+function InstructorCard({ instructor }: { instructor: Instructor }) {
   return (
-    <Link
-      to={`/instructors/${instructor._id}`}
-      className="group relative col-span-1 lg:col-span-2 lg:row-span-2 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
-    >
-      <div className="absolute inset-0">
-        <img
-          src={instructor.image}
-          alt={instructor.name}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover opacity-90 transition-transform duration-500 motion-safe:group-hover:scale-[1.04] pointer-events-none"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
-      </div>
+    <article className="group rounded-[1.75rem] border border-slate-100 bg-[#F8FAFC] p-5 transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-purple-100/70">
+      <div className="relative mx-auto mb-5 h-28 w-28">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 p-1">
+          <div className="h-full w-full overflow-hidden rounded-full bg-white p-1">
+            <img
+              src={instructor.image || DefaultUserImage}
+              alt={instructor.name}
+              className="h-full w-full rounded-full object-cover"
+            />
+          </div>
+        </div>
 
-      <div className="relative flex items-start justify-between p-6">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          Featured instructor
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-[11px] font-bold text-black">
-          <Star size={11} fill="currentColor" />
+        <div className="absolute -right-3 bottom-1 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-black text-yellow-500 shadow-md">
+          <Star className="h-3.5 w-3.5 fill-current" />
           {instructor.rating?.toFixed(1) ?? '0.0'}
-        </span>
+        </div>
       </div>
 
-      <div className="relative mt-auto p-6 pt-24 sm:pt-32 flex flex-col justify-end min-h-[420px]">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-violet-400 font-semibold">
+      <div className="text-center">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-purple-700">
           {instructor.role}
         </p>
-        <h3 className="mt-2 text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+
+        <h3 className="mt-2 text-xl font-black text-slate-950">
           {instructor.name}
         </h3>
-        {instructor.bio && (
-          <p className="mt-3 text-sm text-gray-300 leading-relaxed line-clamp-2 max-w-md">
-            {instructor.bio}
-          </p>
-        )}
-        <div className="mt-5 flex items-center gap-4 text-sm text-gray-300">
-          <span className="inline-flex items-center gap-1.5">
-            <BookOpen size={14} className="text-violet-400" />
-            {instructor.coursesCount} courses
-          </span>
-          <span className="h-3 w-px bg-white/20" />
-          <span className="inline-flex items-center gap-1.5">
-            <Star size={14} className="text-amber-400" fill="currentColor" />
-            {instructor.rating?.toFixed(1) ?? '0.0'} avg rating
-          </span>
-        </div>
-        <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-          View profile
-          <span className="grid place-items-center w-7 h-7 rounded-full bg-white/15 transition-colors group-hover:bg-violet-600">
-            <ArrowUpRight size={14} />
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
-function CompactCard({ instructor, index }: { instructor: Instructor; index: number }) {
-  return (
-    <Link
-      to={`/instructors/${instructor._id}`}
-      className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25 flex flex-col"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={instructor.image}
-          alt={instructor.name}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.05] pointer-events-none"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
-
-        <span className="absolute top-3 left-3 grid place-items-center w-7 h-7 rounded-full bg-white/15 text-white text-[11px] font-bold">
-          {String(index).padStart(2, '0')}
-        </span>
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-md bg-amber-400 px-1.5 py-0.5 text-[11px] font-bold text-black">
-          <Star size={10} fill="currentColor" />
-          {instructor.rating?.toFixed(1) ?? '0.0'}
-        </span>
-      </div>
-
-      <div className="p-4 flex-1 flex flex-col">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-violet-400 font-semibold">
-          {instructor.role}
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+          {instructor.bio ||
+            'Professional instructor focused on helping students learn practical skills through clear lessons.'}
         </p>
-        <h3 className="mt-1 font-semibold text-white truncate">{instructor.name}</h3>
-        <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
-          <span className="inline-flex items-center gap-1">
-            <BookOpen size={12} />
-            {instructor.coursesCount} courses
-          </span>
-          <span className="inline-flex items-center gap-1 text-gray-300 transition-colors group-hover:text-white">
-            Profile <ArrowUpRight size={12} />
-          </span>
+
+        <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-600">
+          <BookOpen className="h-4 w-4 text-purple-700" />
+          {instructor.coursesCount ?? 0} courses
         </div>
+
+        <Link
+          to="/courses"
+          className="mt-5 inline-flex items-center justify-center gap-2 text-sm font-black text-purple-700 transition hover:text-purple-900"
+        >
+          View courses
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
       </div>
-    </Link>
+    </article>
   );
 }
 
 function InstructorsSkeleton() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-2 gap-5 auto-rows-fr">
-      <div className="lg:col-span-2 lg:row-span-2 rounded-3xl bg-white/5 animate-pulse min-h-[420px]" />
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-3xl bg-white/5 animate-pulse h-64" />
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="h-[360px] animate-pulse rounded-[1.75rem] bg-slate-100"
+        />
       ))}
     </div>
   );
